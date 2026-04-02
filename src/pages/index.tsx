@@ -92,6 +92,7 @@ export default function Page() {
         .glass-nav { background: rgba(19, 19, 19, 0.7); backdrop-filter: blur(12px); }
         .tonal-stacking-alt-zebra > div:nth-child(even) { background-color: #0E0E0E; }
         .no-border { border: none !important; }
+        html { scroll-behavior: smooth; }
         body { background-color: #131313; color: #e2e2e2; font-family: 'Open Sans', sans-serif; }
         h1, h2, h3 { font-family: 'Bayon', sans-serif; text-transform: uppercase; letter-spacing: -0.02em; }
         
@@ -105,7 +106,7 @@ export default function Page() {
 <nav class="fixed top-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-4 max-w-full glass-nav">
 <!-- Logo -->
 <div class="flex items-center shrink-0">
-<img alt="Tour Quality Golf Logo" class="h-8 md:h-10 w-auto object-contain" src="/logo.svg"/>
+<a href="/"><img alt="Tour Quality Golf Logo" class="h-8 md:h-10 w-auto object-contain cursor-pointer" src="/logo.svg"/></a>
 </div>
 <!-- Desktop Navigation Links (Hidden on md/tablet and below) -->
 <div class="hidden lg:flex gap-8 items-center">
