@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Bayon&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#D38743",
+              "secondary": "#07807B",
+              "on-surface": "#e2e2e2",
+              "surface": "#0a0a0a",
+              "surface-container": "#1f1f1f",
+              "surface-container-low": "#1b1b1b",
+              "surface-container-lowest": "#0e0e0e",
+              "outline-variant": "#534439",
+              "on-surface-variant": "#d8c2b4",
+              "muted-warm": "#A89880"
+            },
+            fontFamily: {
+              "headline": ["Bayon", "sans-serif"],
+              "body": ["Open Sans", "sans-serif"],
+              "label": ["Open Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Open Sans', sans-serif; background-color: #0a0a0a; color: #e2e2e2; }
+        .font-bayon { font-family: 'Bayon', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .testimonial-slider { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 1.5rem; padding: 2rem 0; }
+        .testimonial-card { flex: 0 0 300px; scroll-snap-align: center; }
+    
+        .testimonial-slider { scroll-behavior: smooth; -ms-overflow-style: none; scrollbar-width: none; }
+        .testimonial-slider::-webkit-scrollbar { display: none; }</style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary/30">
+<!-- Header: Logo-only minimal strip -->
+<header class="fixed top-0 w-full z-50 bg-[#0A0A0A] h-20 flex justify-start items-center px-8 border-none">
+<img alt="Tour Quality Golf Logo" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uh-KMXU18JXT89ngp0Fkui-Kyz0SZk9mLFSK8IC6lvcDBvbltx5UC8MPJHBIfNSOAWMUneDiMKe7DRJ7Xqr6aTTdnRzd7kw3LtXE4ohmvxMoS-XzvDfBRYeH1XyYU3tgiV3Tou-5UgZ1tVv6GFSa2mwH3H5DcpuHBQGxM6aRmdeYWdjhkhA0-C_gWojtF8tgihng6sVjlMnANZ3EKL8dvigGHOrSYJb1RIQEcWQyUdq50qtdGXqpKHgyYdfBNUBX280WVe1zf2Ylw"/>
+</header>
+<main class="pt-20">
+<!-- Section 1: Confirmation Hero -->
+<section class="relative min-h-[70vh] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
+<div class="z-10 text-center max-w-4xl w-full">
+<div class="mb-6 flex justify-center">
+<span class="material-symbols-outlined text-[80px] text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h2 class="font-bayon text-6xl md:text-8xl leading-none mb-12 tracking-tighter uppercase">
+                    YOU'RE BOOKED, <span class="text-primary">ALEX</span>
+</h2>
+<!-- Booking Summary Card -->
+<div class="bg-surface-container-low p-8 md:p-12 rounded-xl relative overflow-hidden group text-left">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<div class="grid md:grid-cols-2 gap-8">
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">calendar_today</span>
+<p class="font-label font-bold uppercase tracking-wider text-sm text-white">Tuesday, April 21, 2026</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary">schedule</span>
+<p class="font-label font-bold uppercase tracking-wider text-sm text-white">10:30 AM — Central Time</p>
+</div>
+</div>
+<div class="space-y-4 border-l border-outline-variant/15 pl-0 md:pl-8">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-secondary">location_on</span>
+<p class="font-label font-bold uppercase tracking-wider text-sm leading-relaxed text-white">
+                                    6006 S Sheridan Rd, Suite A<br/>Tulsa, OK 74145
+                                </p>
+</div>
+</div>
+</div>
+<div class="mt-10 flex flex-wrap gap-4 justify-start">
+<button class="px-6 py-3 rounded-full border border-primary text-primary font-label font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">event</span> Add to Google Calendar
+                        </button>
+<button class="px-6 py-3 rounded-full border border-primary text-primary font-label font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">calendar_add_on</span> Add to Apple Calendar
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: WHAT HAPPENS ON THE DAY -->
+<section class="py-24 px-6 bg-surface-container-lowest border-t border-white/5">
+<div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-4">
+<h3 class="font-bayon text-4xl md:text-5xl uppercase tracking-tighter">WHAT HAPPENS ON THE DAY</h3>
+<p class="text-stone-500 font-label font-bold text-xs uppercase tracking-[0.2em]">01 — 04 / PREPARATION</p>
+</div>
+<div class="grid md:grid-cols-2 gap-4">
+<div class="bg-surface p-10 rounded-lg group border border-white/5">
+<span class="font-bayon text-primary text-2xl mb-4 block">01</span>
+<h4 class="font-label font-bold text-white text-xl uppercase mb-2">ARRIVE 10 MINUTES EARLY.</h4>
+<p class="text-on-surface-variant/80 text-sm leading-relaxed">Get checked in and grab a water. We want you ready to swing the moment your bay is live.</p>
+</div>
+<div class="bg-surface p-10 rounded-lg group border border-white/5">
+<span class="font-bayon text-primary text-2xl mb-4 block">02</span>
+<h4 class="font-label font-bold text-white text-xl uppercase mb-2">BRING YOUR OWN CLUBS.</h4>
+<p class="text-on-surface-variant/80 text-sm leading-relaxed">This is about your game. Bringing your current set ensures the data we capture is relevant to your performance.</p>
+</div>
+<div class="bg-surface p-10 rounded-lg group border border-white/5">
+<span class="font-bayon text-primary text-2xl mb-4 block">03</span>
+<h4 class="font-label font-bold text-white text-xl uppercase mb-2">WE'LL SHOW YOU YOUR NUMBERS.</h4>
+<p class="text-on-surface-variant/80 text-sm leading-relaxed">Instant feedback on launch angle, ball speed, and spin rate. Raw tour-level precision data on every shot.</p>
+</div>
+<div class="bg-surface p-10 rounded-lg group border border-white/5">
+<span class="font-bayon text-primary text-2xl mb-4 block">04</span>
+<h4 class="font-label font-bold text-white text-xl uppercase mb-2">NO PRESSURE. NO PITCH.</h4>
+<p class="text-on-surface-variant/80 text-sm leading-relaxed">The bay is yours. No sales pitch, just elite technology and a focus on pure golfing performance.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Testimonial Slider -->
+<section class="py-24 px-6 md:px-12 bg-surface-container-lowest overflow-hidden" id="social-proof">
+<div class="max-w-7xl mx-auto relative">
+<div class="mb-16 text-center md:text-left">
+<h2 class="text-4xl md:text-6xl text-white font-headline leading-tight" style="">REAL GOLFERS. REAL NUMBERS.</h2>
+<h3 class="text-3xl md:text-5xl font-headline mt-2" style="color: rgb(168, 152, 128);">HERE'S WHAT HAPPENS WHEN YOU STOP GUESSING.</h3>
+</div>
+<div class="relative flex items-center group/slider">
+<!-- Navigation Arrows -->
+<button class="absolute z-10 p-4 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/10 transition-colors hidden xl:flex items-center justify-center -left-6">
+<span class="material-symbols-outlined text-white">chevron_left</span>
+</button>
+<div class="testimonial-slider flex overflow-x-auto gap-8 w-full snap-x snap-mandatory py-4">
+<!-- Card 1 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"The level of detail in the fitting process is unlike anything I've experienced. My dispersion tightened up immediately."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— MARK S.</div>
+</div>
+<!-- Card 2 — FEATURED (orange background) -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-primary p-8 rounded-xl flex flex-col justify-between shadow-2xl md:scale-105 z-10 text-black">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-black" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-black" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-black" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-black" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-black" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body font-bold">"Traveled all the way from Ireland just to get my clubs dialed in here. Best facility in the country, period."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— DAVID O., IRELAND</div>
+</div>
+<!-- Card 3 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"Started as a 15 handicap, down to an 8 in four months thanks to the TrackMan data and professional guidance."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— SARAH T.</div>
+</div>
+<!-- Card 4 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"After three lessons with Ross I'm hitting the ball better than I ever did in my younger days. Almost decided the game wasn't worth it anymore — glad I didn't."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— VERIFIED GOOGLE REVIEW</div>
+</div>
+<!-- Card 5 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"Ross and Preston were very knowledgeable and didn't try forcing me into a certain brand. No pressure, lots of brands to test, and backed by real data."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— VERIFIED GOOGLE REVIEW</div>
+</div>
+<!-- Card 6 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"He will help you improve your game and won't sell you on anything you don't need. I go to him for honest feedback — every time."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— VERIFIED GOOGLE REVIEW</div>
+</div>
+<!-- Card 7 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"I gifted my 73-year-old father two lessons with Ross. Post-lessons, we played a round together and he delivered his best performance in years."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— VERIFIED GOOGLE REVIEW</div>
+</div>
+<!-- Card 8 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"I live in Michigan and ship my clubs to him because he's one of the few people I trust to work on them. Worth every last penny."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— VERIFIED GOOGLE REVIEW</div>
+</div>
+<!-- Card 9 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"Transformed my game dramatically. The clubs they got me in took me from shooting mid 90's to mid 80's or lower."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— VERIFIED GOOGLE REVIEW</div>
+</div>
+<!-- Card 10 -->
+<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
+<div>
+<div class="flex gap-1 mb-4">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
+</div>
+<p class="text-lg italic mb-6 font-body">"Best club fitting and golf lesson experience I've ever had. No other place in town can compare to Tour Quality Golf."</p>
+</div>
+<div class="font-label font-bold uppercase tracking-widest text-sm">— VERIFIED GOOGLE REVIEW</div>
+</div>
+</div>
+<button class="absolute z-10 p-4 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/10 transition-colors hidden xl:flex items-center justify-center -right-6">
+<span class="material-symbols-outlined text-white">chevron_right</span>
+</button>
+</div>
+<!-- Mobile Navigation -->
+<div class="mt-12 xl:hidden flex items-center justify-center gap-8">
+<button class="p-3 rounded-full bg-black/30 border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-on-surface">chevron_left</span>
+</button>
+<button class="p-3 rounded-full bg-black/30 border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-on-surface">chevron_right</span>
+</button>
+</div>
+<!-- Pagination Dots -->
+<div class="mt-12 flex items-center justify-center gap-3">
+<div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+<div class="w-2 h-2 rounded-full bg-white/20"></div>
+</div>
+</div>
+</section>
+<!-- Section 4: FAQ -->
+<section class="py-24 px-6 bg-surface-container-lowest">
+<div class="max-w-4xl mx-auto">
+<h3 class="font-bayon text-4xl uppercase mb-12 tracking-tight">BEFORE YOU COME IN</h3>
+<div class="space-y-4">
+<details class="group bg-surface rounded-lg border border-white/5">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-label font-bold uppercase text-sm tracking-widest text-white">What should I bring?</span>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-6 pb-6 text-on-surface-variant text-sm border-t border-outline-variant/10 pt-4">
+                            Please bring your full set of golf clubs and wear clean athletic shoes or spikeless golf shoes.
+                        </div>
+</details>
+<details class="group bg-surface rounded-lg border border-white/5">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-label font-bold uppercase text-sm tracking-widest text-white">Can I bring a friend?</span>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-6 pb-6 text-on-surface-variant text-sm border-t border-outline-variant/10 pt-4">
+                            Your booking is for a private performance session. One additional guest is welcome to observe, but the bay time is optimized for a single golfer's data collection.
+                        </div>
+</details>
+<details class="group bg-surface rounded-lg border border-white/5">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-label font-bold uppercase text-sm tracking-widest text-white">How accurate is the data?</span>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-6 pb-6 text-on-surface-variant text-sm border-t border-outline-variant/10 pt-4">
+                            We use industry-leading launch monitors accurate to within 0.1mph ball speed and 1-yard carry distance. This is the same technology used on the PGA Tour.
+                        </div>
+</details>
+<details class="group bg-surface rounded-lg border border-white/5">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-label font-bold uppercase text-sm tracking-widest text-white">Is there a cancellation policy?</span>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-6 pb-6 text-on-surface-variant text-sm border-t border-outline-variant/10 pt-4">
+                            We ask for at least 24 hours' notice for any cancellations or rescheduling to allow other golfers to utilize the precision equipment.
+                        </div>
+</details>
+<details class="group bg-surface rounded-lg border border-white/5">
+<summary class="flex justify-between items-center p-6 cursor-pointer list-none">
+<span class="font-label font-bold uppercase text-sm tracking-widest text-white">Will a pro be assisting me?</span>
+<span class="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
+</summary>
+<div class="px-6 pb-6 text-on-surface-variant text-sm border-t border-outline-variant/10 pt-4">
+                            A member of our technical staff will help you set up and ensure you're reading the data correctly, but the session is designed for your independent practice and analysis.
+                        </div>
+</details>
+</div>
+</div>
+</section>
+<!-- Section 5: Final Reassurance CTA -->
+<section class="py-24 px-6 bg-[#1B221B] relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, #D38743 1px, transparent 0); background-size: 40px 40px;"></div>
+</div>
+<div class="max-w-4xl mx-auto text-center z-10 relative">
+<h3 class="font-bayon text-5xl md:text-6xl uppercase tracking-tighter mb-8 text-on-background">
+                    QUESTIONS BEFORE YOU COME IN?
+                </h3>
+<div class="flex flex-col items-center gap-6">
+<p class="font-bayon text-primary text-3xl tracking-widest">(918) 221-7096</p>
+<div class="w-16 h-1 bg-primary"></div>
+<p class="text-on-surface-variant max-w-lg mx-auto leading-relaxed">
+                        Call us directly. Our master fitters and technicians are ready to assist. If you need to change your appointment or have specific equipment questions, give us a call.
+                    </p>
+</div>
+</div>
+</section>
+</main>
+<!-- Minimal Footer -->
+<footer class="bg-surface py-12 px-6 border-t border-white/5">
+<div class="max-w-7xl mx-auto flex justify-center items-center">
+<p class="font-label text-[10px] font-bold uppercase tracking-[0.3em] text-stone-600 text-center">
+                © 2024 TOUR QUALITY GOLF TULSA. ALL RIGHTS RESERVED.
+            </p>
+</div>
+</footer>
+</body></html>
