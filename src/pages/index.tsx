@@ -105,7 +105,7 @@ export default function Page() {
 <nav class="fixed top-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-4 max-w-full glass-nav">
 <!-- Logo -->
 <div class="flex items-center shrink-0">
-<img alt="Tour Quality Golf Logo" class="h-8 md:h-10 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uiahXYZGZLbsZlwJLOlZzN3oamc48PuKqO5FKF_EFN74gX4rEtpV8LGjjOtjSfn9P32fd89GqrwWNARDjj9MzFHEeSQnMpzncBXOKkhhMXPph5nPLLq-4H3-lcBeMPQZylEgwPLZRbA-_oPxOVjEPmeD11apjHRvQnXlwGIHCdEECWC2i_8WwsHxBs0Si1RqbG2aJLlRlsdrDHUi9B2ZOuAj9uUj4aEaOidp6PaJKC1ZZqwESO48jQ3VWuo9z1HBN9KdAMWHRSO"/>
+<img alt="Tour Quality Golf Logo" class="h-8 md:h-10 w-auto object-contain" src="/logo.svg"/>
 </div>
 <!-- Desktop Navigation Links (Hidden on md/tablet and below) -->
 <div class="hidden lg:flex gap-8 items-center">

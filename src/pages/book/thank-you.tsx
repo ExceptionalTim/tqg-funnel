@@ -51,7 +51,7 @@ export default function Page() {
         className="bg-surface text-on-surface selection:bg-primary/30"
         dangerouslySetInnerHTML={{ __html: `<!-- Header: Logo-only minimal strip -->
 <header class="fixed top-0 w-full z-50 bg-[#0A0A0A] h-20 flex justify-start items-center px-8 border-none">
-<img alt="Tour Quality Golf Logo" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0uh-KMXU18JXT89ngp0Fkui-Kyz0SZk9mLFSK8IC6lvcDBvbltx5UC8MPJHBIfNSOAWMUneDiMKe7DRJ7Xqr6aTTdnRzd7kw3LtXE4ohmvxMoS-XzvDfBRYeH1XyYU3tgiV3Tou-5UgZ1tVv6GFSa2mwH3H5DcpuHBQGxM6aRmdeYWdjhkhA0-C_gWojtF8tgihng6sVjlMnANZ3EKL8dvigGHOrSYJb1RIQEcWQyUdq50qtdGXqpKHgyYdfBNUBX280WVe1zf2Ylw"/>
+<img alt="Tour Quality Golf Logo" class="h-12 w-auto object-contain" src="/logo.svg"/>
 </header>
 <main class="pt-20">
 <!-- Section 1: Confirmation Hero -->
