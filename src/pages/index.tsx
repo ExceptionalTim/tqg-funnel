@@ -183,7 +183,7 @@ export default function Page() {
 </div>
 </nav>
 <!-- SECTION 1: HERO -->
-<header class="relative min-h-[70vh] flex items-center pt-32 pb-24 px-6 md:px-12 overflow-hidden bg-surface">
+<header class="relative min-h-[70vh] flex items-center py-28 px-6 md:px-12 overflow-hidden bg-surface">
 <div class="absolute inset-0 z-0">
 <img class="w-full h-full object-cover opacity-40" data-alt="cinematic wide shot of a golfer swinging in a high-tech indoor simulator with glowing Trackman data overlays on a massive screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGFj1hSjab2kigtzb70Hr7D8YDT5GeGclszEjkK8V5nwrKCd5FkWXaLWeYY3ZaN6Xwgg2kRouLVt8KYS2gipyo-xHPs5DJps3Pj3lnaU2J3b115GE1jTbTftxulac9dovetdKMhUPvTr-3xYWKtfUjpRsZjm5xhiJlpR8PMJu_d36POka3hX_KOKT7BeO5dFQ_C4tl5NaqphCR-uUcRg5atTUtiiernX2QW6ykPwoDlCvUvHKz53_jDLUj6yz5--Lrl_UkvVALoPc" style=""/>
 <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/60 to-transparent"></div>
@@ -241,9 +241,9 @@ export default function Page() {
 </div>
 </section>
 <!-- SECTION 2: PRIMARY OFFER -->
-<section class="pt-16 pb-20 px-6 md:px-12 bg-surface-container-low" id="the-offer">
+<section class="py-20 px-6 md:px-12 bg-surface-container-low" id="the-offer">
 <div class="max-w-7xl mx-auto">
-<h2 class="text-4xl md:text-5xl text-center mb-16" style="">Your TWO PATHS TO BETTER GOLF</h2>
+<h2 class="text-4xl md:text-5xl text-center mb-10" style="">Your TWO PATHS TO BETTER GOLF</h2>
 <div class="grid md:grid-cols-2 gap-8">
 <!-- Left Card -->
 <div class="bg-surface p-10 rounded-xl relative overflow-hidden group transition-colors duration-300">
