@@ -246,7 +246,7 @@ export default function Page() {
 <h2 class="text-4xl md:text-5xl text-center mb-16" style="">Your TWO PATHS TO BETTER GOLF</h2>
 <div class="grid md:grid-cols-2 gap-8">
 <!-- Left Card -->
-<div class="bg-surface p-10 rounded-xl relative overflow-hidden group hover:bg-surface-container transition-colors duration-300">
+<div class="bg-surface p-10 rounded-xl relative overflow-hidden group transition-colors duration-300">
 <div class="flex justify-between items-start mb-8">
 <div>
 <span class="text-secondary font-bold uppercase tracking-widest text-sm font-label" style="">BASELINE CHECK</span>
@@ -441,10 +441,10 @@ export default function Page() {
 <div>
 <h5 class="font-['Bayon'] text-xl text-[#FFB77C] mb-6" style="">SERVICES</h5>
 <ul class="space-y-4 font-['Open_Sans'] text-sm">
-<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#" style="">Full Bag Fitting</a></li>
-<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#" style="">PGA Instruction</a></li>
-<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#" style="">TrackMan Rental</a></li>
-<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#" style="">Club Repair</a></li></ul>
+<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#why-tqg" style="">Full Bag Fitting</a></li>
+<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#why-tqg" style="">PGA Instruction</a></li>
+<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#why-tqg" style="">TrackMan Rental</a></li>
+<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#why-tqg" style="">Club Repair</a></li></ul>
 </div>
 <div>
 <h5 class="font-['Bayon'] text-xl text-[#FFB77C] mb-6" style="">COMPANY</h5>

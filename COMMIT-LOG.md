@@ -7,6 +7,25 @@
 
 ---
 
+## Commit 5: Landing Page Offer Card & Footer Link Fixes
+
+### MODIFIED: `src/pages/index.tsx`
+- **What was changed (1 of 2)**: Removed `hover:bg-surface-container` from the left offer card ("First Look Session: 30 Minutes on TrackMan") in the "Your Two Paths to Better Golf" section.
+- **Why**: With the section background set to `bg-surface-container-low`, hovering the left card changed its background to `bg-surface-container` which is nearly identical, making the card visually disappear into the background. Removing the hover effect keeps the card consistently visible.
+
+- **What was changed (2 of 2)**: Changed all four footer Services links (Full Bag Fitting, PGA Instruction, TrackMan Rental, Club Repair) from `href="#"` to `href="#why-tqg"`.
+- **Why**: These service links were dead (`#`). They now anchor to the "Why Golfers Drive Hours to Get Here" section which showcases TQG's service capabilities.
+
+### Diagnostic Results
+- **TypeScript**: One pre-existing error (`faq.open` on `Element` at index.tsx:65). No new errors introduced by this commit.
+- **Tests**: No test framework configured.
+- **Files changed**: 1 file, 5 insertions, 5 deletions.
+
+### Potential Risks
+- None. Both changes are minimal CSS/href tweaks with no functional side effects.
+
+---
+
 ## Commit 4: Evaluation Thank-You Page Overhaul + Logo & Nav Fixes
 
 ### MODIFIED: `src/pages/book/evaluation/thank-you.tsx`
