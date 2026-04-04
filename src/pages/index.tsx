@@ -59,9 +59,9 @@ export default function Page() {
       sections.forEach(section => observer.observe(section));
     }
 
-    const faqs = document.querySelectorAll('#faq details');
+    const faqs = document.querySelectorAll<HTMLDetailsElement>('#faq details');
     faqs.forEach(faq => {
-      faq.addEventListener('toggle', (e) => {
+      faq.addEventListener('toggle', () => {
         if (faq.open) {
           faqs.forEach(other => {
             if (other !== faq) other.removeAttribute('open');
