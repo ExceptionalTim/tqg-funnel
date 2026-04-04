@@ -7,21 +7,70 @@ import TestimonialSlider from '../components/TestimonialSlider';
 export default function Page() {
   const router = useRouter();
   useEffect(() => {
-    // Make all primary CTA buttons navigate to the booking flow
-    const ctaTexts = ['BOOK NOW', 'BOOK YOUR FREE', 'CLAIM YOUR FREE BAY', 'FREE 30 MINUTE PRACTICE', 'BOOK YOUR EVALUATION', 'YOUR EVALUATION'];
+    // CTA routing: split traffic between Free Bay and Evaluation funnels
+    const freeBayCtaTexts = ['BOOK YOUR FREE', 'CLAIM YOUR FREE BAY', 'FREE 30 MINUTE'];
+    const evaluationCtaTexts = ['BOOK YOUR EVALUATION', 'YOUR EVALUATION', '50%', 'FULL LESSON'];
+
     document.querySelectorAll('button').forEach(function(btn) {
       const t = (btn.textContent || '').trim().toUpperCase();
-      if (ctaTexts.some(function(k) { return t.includes(k); })) {
-        if (btn.id === 'nav-book-now') {
-          btn.addEventListener('click', function() {
-            document.getElementById('the-offer')?.scrollIntoView({ behavior: 'smooth' });
-          });
-        } else {
-          btn.addEventListener('click', function() { router.push('/book/date'); });
-        }
+
+      // "Book Now" in nav scrolls to the offer section
+      if (btn.id === 'nav-book-now') {
+        btn.addEventListener('click', function() {
+          document.getElementById('the-offer')?.scrollIntoView({ behavior: 'smooth' });
+        });
         btn.style.cursor = 'pointer';
+        return;
+      }
+
+      // Free Bay funnel CTAs
+      if (freeBayCtaTexts.some(function(k) { return t.includes(k); })) {
+        btn.addEventListener('click', function() { router.push('/book/free-bay'); });
+        btn.style.cursor = 'pointer';
+        return;
+      }
+
+      // Evaluation funnel CTAs
+      if (evaluationCtaTexts.some(function(k) { return t.includes(k); })) {
+        btn.addEventListener('click', function() { router.push('/book/evaluation'); });
+        btn.style.cursor = 'pointer';
+        return;
       }
     });
+
+    const sections = document.querySelectorAll('section[id], header[id]');
+    const navLinks = document.querySelectorAll('.glass-nav a[href^="#"]');
+    
+    if (navLinks.length > 0) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('id');
+            navLinks.forEach(link => {
+              link.className = "text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1";
+              if (link.getAttribute('href') === `#${id}`) {
+                link.classList.add('nav-link-active');
+              }
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      
+      sections.forEach(section => observer.observe(section));
+    }
+
+    const faqs = document.querySelectorAll('#faq details');
+    faqs.forEach(faq => {
+      faq.addEventListener('toggle', (e) => {
+        if (faq.open) {
+          faqs.forEach(other => {
+            if (other !== faq) other.removeAttribute('open');
+          });
+        }
+      });
+    });
+
+
 
     }, [router]);
 
@@ -117,12 +166,12 @@ export default function Page() {
 </div>
 <!-- Desktop Navigation Links (Hidden on md/tablet and below) -->
 <div class="hidden lg:flex gap-8 items-center">
-<a class="text-[#FFB77C] font-bold border-b-2 border-[#D38743] pb-1 font-['Bayon'] uppercase tracking-tight text-lg" href="#how-it-works-section">HOW IT WORKS</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#why-tqg">WHY TQG</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#social-proof">Testimonials</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#the-offer">THE OFFER</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#the-facility">THE FACILITY</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#faq">FAQ</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#how-it-works-section">HOW IT WORKS</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#why-tqg">WHY TQG</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#social-proof">Testimonials</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#the-offer">THE OFFER</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#the-facility">THE FACILITY</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#faq">FAQ</a>
 </div>
 <!-- Right Side Actions -->
 <div class="flex items-center gap-4">
@@ -192,12 +241,12 @@ export default function Page() {
 </div>
 </section>
 <!-- SECTION 2: PRIMARY OFFER -->
-<section class="py-24 px-6 md:px-12 bg-surface" id="the-offer">
+<section class="pt-16 pb-20 px-6 md:px-12 bg-surface-container-low" id="the-offer">
 <div class="max-w-7xl mx-auto">
 <h2 class="text-4xl md:text-5xl text-center mb-16" style="">Your TWO PATHS TO BETTER GOLF</h2>
 <div class="grid md:grid-cols-2 gap-8">
 <!-- Left Card -->
-<div class="bg-surface-container-low p-10 rounded-xl relative overflow-hidden group hover:bg-surface-container transition-colors duration-300">
+<div class="bg-surface p-10 rounded-xl relative overflow-hidden group hover:bg-surface-container transition-colors duration-300">
 <div class="flex justify-between items-start mb-8">
 <div>
 <span class="text-secondary font-bold uppercase tracking-widest text-sm font-label" style="">BASELINE CHECK</span>
@@ -213,7 +262,7 @@ export default function Page() {
 <button class="w-full py-4 border border-outline-variant hover:bg-surface-bright rounded-full transition-all uppercase font-bold tracking-tight" style="">Claim Your Free Bay</button>
 </div>
 <!-- Right Card -->
-<div class="bg-surface-container-low p-10 rounded-xl border-2 border-primary-container relative overflow-hidden">
+<div class="bg-surface p-10 rounded-xl border-2 border-primary-container relative overflow-hidden">
 <div class="absolute top-0 right-0 bg-primary-container text-on-primary-container px-4 py-1 text-xs font-bold uppercase tracking-tighter" style="">Best Value</div>
 <div class="flex justify-between items-start mb-8">
 <div>

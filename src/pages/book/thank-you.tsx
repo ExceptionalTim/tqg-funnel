@@ -51,7 +51,7 @@ export default function Page() {
         className="bg-surface text-on-surface selection:bg-primary/30"
         dangerouslySetInnerHTML={{ __html: `<!-- Header: Logo-only minimal strip -->
 <header class="fixed top-0 w-full z-50 bg-[#0A0A0A] h-20 flex justify-start items-center px-8 border-none">
-<a href="/"><img alt="Tour Quality Golf Logo" class="h-12 w-auto object-contain cursor-pointer" src="/logo.svg"/></a>
+<a href="/"><img alt="Tour Quality Golf Logo" class="h-12 w-auto object-contain cursor-pointer" src="https://www.tourqualitygolf.com/wp-content/uploads/2021/09/tour-quality-logo-1.webp"/></a>
 </header>
 <main class="pt-20">
 <!-- Section 1: Confirmation Hero -->
