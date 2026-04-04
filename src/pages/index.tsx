@@ -14,6 +14,66 @@ export default function Page() {
         btn.style.cursor = 'pointer';
       }
     });
+
+    const slider = document.querySelector('.testimonial-slider');
+    if (slider) {
+      const scrollLeft = () => {
+        const amount = window.innerWidth < 768 ? slider.clientWidth : slider.clientWidth / 3;
+        slider.scrollBy({ left: -amount, behavior: 'smooth' });
+      };
+      const scrollRight = () => {
+        const amount = window.innerWidth < 768 ? slider.clientWidth : slider.clientWidth / 3;
+        slider.scrollBy({ left: amount, behavior: 'smooth' });
+      };
+      document.querySelectorAll('.slider-btn-left').forEach(btn => btn.addEventListener('click', scrollLeft));
+      document.querySelectorAll('.slider-btn-right').forEach(btn => btn.addEventListener('click', scrollRight));
+
+      // Pagination dots logic
+      const updateDots = () => {
+        const firstCard = slider.firstElementChild as HTMLElement;
+        if (!firstCard) return;
+        const cardWidth = firstCard.offsetWidth;
+        const scrollGap = 32; // gap-8
+        const scrollPerDot = cardWidth + scrollGap;
+        
+        const dotsContainer = document.getElementById('pagination-dots-container');
+        if (dotsContainer) {
+          const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
+          const maxIndex = Math.round(maxScrollLeft / scrollPerDot);
+          const numDots = Math.max(0, maxIndex + 1);
+
+          if (dotsContainer.children.length !== numDots) {
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < numDots; i++) {
+              const dot = document.createElement('div');
+              dot.addEventListener('click', () => {
+                slider.scrollTo({ left: i * scrollPerDot, behavior: 'smooth' });
+              });
+              dotsContainer.appendChild(dot);
+            }
+          }
+          
+          const index = Math.round(slider.scrollLeft / scrollPerDot);
+          const dots = dotsContainer.querySelectorAll('div');
+          dots.forEach((dot, i) => {
+            if (i === index) {
+              dot.className = 'pagination-dot w-2.5 h-2.5 rounded-full bg-primary-container cursor-pointer transition-all';
+            } else {
+              dot.className = 'pagination-dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all hover:bg-white/40';
+            }
+          });
+        }
+      };
+
+      slider.addEventListener('scroll', updateDots);
+      window.addEventListener('resize', updateDots);
+      setTimeout(updateDots, 100); // Initial calculation
+
+      return () => {
+        slider.removeEventListener('scroll', updateDots);
+        window.removeEventListener('resize', updateDots);
+      };
+    }
   }, [router]);
 
   return (
@@ -23,8 +83,6 @@ export default function Page() {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bayon&family=Open+Sans:wght@400;600;700&family=Space+Grotesk:wght@300;500;700&family=Work+Sans:wght@400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
         <script dangerouslySetInnerHTML={{ __html: `tailwind.config = {
             darkMode: "class",
             theme: {
@@ -101,12 +159,12 @@ export default function Page() {
     ` }} />
       </Head>
       <div
-        className="bg-surface"
+        className="bg-surface text-on-surface"
         dangerouslySetInnerHTML={{ __html: `<!-- NAVIGATION SHELL -->
 <nav class="fixed top-0 w-full z-50 flex justify-between items-center px-6 md:px-12 py-4 max-w-full glass-nav">
 <!-- Logo -->
 <div class="flex items-center shrink-0">
-<a href="/"><img alt="Tour Quality Golf Logo" class="h-8 md:h-10 w-auto object-contain cursor-pointer" src="/logo.svg"/></a>
+<a href="/"><img alt="Tour Quality Golf Logo" class="h-8 md:h-10 w-auto object-contain cursor-pointer" src="https://www.tourqualitygolf.com/wp-content/uploads/2021/09/tour-quality-logo-1.webp"/></a>
 </div>
 <!-- Desktop Navigation Links (Hidden on md/tablet and below) -->
 <div class="hidden lg:flex gap-8 items-center">
@@ -149,13 +207,8 @@ export default function Page() {
                     </button>
 </div>
 </div>
-<div class="relative aspect-video w-full rounded-xl overflow-hidden shadow-2xl border border-white/10 group cursor-pointer">
-<img alt="Tour Quality Golf and The Sheridan Club" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/ADBb0uj4a3hPddN_uQNE_qjEmoXmjp0w8sGNW9QPCuoliRup-Qmmw-oxXzSDyutPCW7qNbEItDi_edJ0xU4659g_BTatI-KCD8OuFAKQg1wv4llDTnNyXetGa4QmBt4wTbI3xAYPkQj7X_gD5H1__uE469YhTIlu3Q2nxvxEHfztdKc7ljIkdGulRuySFGElA3CHYE_9Ed03edDnzybKiCxR88rAHy4pNRbPWwLVa4C0vCMK2sm4FWKTWYg_M61M9xaBSO0-Pui7x2kKPQ" style=""/>
-<div class="absolute inset-0 bg-black/20 flex items-center justify-center">
-<div class="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container shadow-xl transition-transform group-hover:scale-110">
-<span class="material-symbols-outlined text-4xl" style='font-variation-settings: "FILL" 1;'>play_arrow</span>
-</div>
-</div>
+<div class="relative aspect-video w-full rounded-xl overflow-hidden shadow-2xl border border-white/10">
+<iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/UP5UIvKoWwM?si=JgNBebXbiZtif-4f" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 </div>
 </div>
 </header>
@@ -242,7 +295,7 @@ export default function Page() {
 </div>
 <div class="relative flex items-center group/slider">
 <!-- Navigation Arrows -->
-<button class="absolute z-10 p-4 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/10 transition-colors hidden xl:flex items-center justify-center -left-6" style="">
+<button class="slider-btn-left absolute z-10 p-2 md:p-4 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/10 transition-colors flex items-center justify-center left-2 md:-left-6" style="">
 <span class="material-symbols-outlined text-white" style="">chevron_left</span>
 </button>
 <div class="testimonial-slider flex overflow-x-auto gap-8 w-full snap-x snap-mandatory py-4">
@@ -318,31 +371,13 @@ export default function Page() {
 <div class="font-label font-bold uppercase tracking-widest text-sm" style="">— JASON H.</div>
 </div>
 </div>
-<button class="absolute z-10 p-4 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/10 transition-colors hidden xl:flex items-center justify-center -right-6" style="">
+<button class="slider-btn-right absolute z-10 p-2 md:p-4 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/10 transition-colors flex items-center justify-center right-2 md:-right-6" style="">
 <span class="material-symbols-outlined text-white" style="">chevron_right</span>
 </button>
 </div>
-<!-- Mobile Navigation -->
-<div class="mt-12 xl:hidden flex items-center justify-center gap-8">
-<button class="p-3 rounded-full bg-black/30 border border-outline-variant hover:bg-surface-container transition-colors" style="">
-<span class="material-symbols-outlined text-on-surface" style="">chevron_left</span>
-</button>
-<button class="p-3 rounded-full bg-black/30 border border-outline-variant hover:bg-surface-container transition-colors" style="">
-<span class="material-symbols-outlined text-on-surface" style="">chevron_right</span>
-</button>
-</div>
-<!-- Pagination Dots (10 items) -->
-<div class="mt-12 flex items-center justify-center gap-3">
-<div class="w-2.5 h-2.5 rounded-full bg-primary-container"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
-<div class="w-2 h-2 rounded-full bg-white/20"></div>
+
+<!-- Pagination Dots -->
+<div id="pagination-dots-container" class="mt-12 flex flex-wrap items-center justify-center gap-3 min-h-[10px]">
 </div>
 </div>
 </section>
