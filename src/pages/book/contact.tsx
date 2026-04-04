@@ -108,7 +108,7 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: `<!-- TopAppBar -->
 <header class="bg-[#131313] fixed top-0 w-full z-50">
 <div class="flex justify-center items-center w-full py-6 px-8 max-w-7xl mx-auto">
-<div class="w-full flex justify-start items-center"><img alt="Tour Quality Golf Logo" class="h-12 w-auto" src="/logo.svg"/></div>
+<div class="w-full flex justify-start items-center"><a href="/"><img alt="Tour Quality Golf Logo" class="h-12 w-auto cursor-pointer" src="/logo.svg"/></a></div>
 </div>
 </header>
 <main class="pt-24 min-h-screen">
