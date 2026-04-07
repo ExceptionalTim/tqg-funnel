@@ -33,3 +33,9 @@ a {
     color-scheme: dark;
   }
 }
+
+.nav-link-active {
+  color: #FFB77C !important;
+  border-bottom-color: #D38743 !important;
+  font-weight: 700 !important;
+}

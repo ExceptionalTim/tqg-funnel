@@ -1,80 +1,78 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import TestimonialSlider from '../components/TestimonialSlider';
+
 
 export default function Page() {
   const router = useRouter();
   useEffect(() => {
-    // Make all primary CTA buttons navigate to the booking flow
-    const ctaTexts = ['BOOK NOW', 'BOOK YOUR FREE', 'CLAIM YOUR FREE BAY', 'FREE 30 MINUTE PRACTICE', 'BOOK YOUR EVALUATION', 'YOUR EVALUATION'];
+    // CTA routing: split traffic between Free Bay and Evaluation funnels
+    const freeBayCtaTexts = ['BOOK YOUR FREE', 'CLAIM YOUR FREE BAY', 'FREE 30 MINUTE'];
+    const evaluationCtaTexts = ['BOOK YOUR EVALUATION', 'YOUR EVALUATION', '50%', 'FULL LESSON'];
+
     document.querySelectorAll('button').forEach(function(btn) {
       const t = (btn.textContent || '').trim().toUpperCase();
-      if (ctaTexts.some(function(k) { return t.includes(k); })) {
-        btn.addEventListener('click', function() { router.push('/book/date'); });
+
+      // "Book Now" in nav scrolls to the offer section
+      if (btn.id === 'nav-book-now') {
+        btn.addEventListener('click', function() {
+          document.getElementById('the-offer')?.scrollIntoView({ behavior: 'smooth' });
+        });
         btn.style.cursor = 'pointer';
+        return;
+      }
+
+      // Free Bay funnel CTAs
+      if (freeBayCtaTexts.some(function(k) { return t.includes(k); })) {
+        btn.addEventListener('click', function() { router.push('/book/free-bay'); });
+        btn.style.cursor = 'pointer';
+        return;
+      }
+
+      // Evaluation funnel CTAs
+      if (evaluationCtaTexts.some(function(k) { return t.includes(k); })) {
+        btn.addEventListener('click', function() { router.push('/book/evaluation'); });
+        btn.style.cursor = 'pointer';
+        return;
       }
     });
 
-    const slider = document.querySelector('.testimonial-slider');
-    if (slider) {
-      const scrollLeft = () => {
-        const amount = window.innerWidth < 768 ? slider.clientWidth : slider.clientWidth / 3;
-        slider.scrollBy({ left: -amount, behavior: 'smooth' });
-      };
-      const scrollRight = () => {
-        const amount = window.innerWidth < 768 ? slider.clientWidth : slider.clientWidth / 3;
-        slider.scrollBy({ left: amount, behavior: 'smooth' });
-      };
-      document.querySelectorAll('.slider-btn-left').forEach(btn => btn.addEventListener('click', scrollLeft));
-      document.querySelectorAll('.slider-btn-right').forEach(btn => btn.addEventListener('click', scrollRight));
-
-      // Pagination dots logic
-      const updateDots = () => {
-        const firstCard = slider.firstElementChild as HTMLElement;
-        if (!firstCard) return;
-        const cardWidth = firstCard.offsetWidth;
-        const scrollGap = 32; // gap-8
-        const scrollPerDot = cardWidth + scrollGap;
-        
-        const dotsContainer = document.getElementById('pagination-dots-container');
-        if (dotsContainer) {
-          const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
-          const maxIndex = Math.round(maxScrollLeft / scrollPerDot);
-          const numDots = Math.max(0, maxIndex + 1);
-
-          if (dotsContainer.children.length !== numDots) {
-            dotsContainer.innerHTML = '';
-            for (let i = 0; i < numDots; i++) {
-              const dot = document.createElement('div');
-              dot.addEventListener('click', () => {
-                slider.scrollTo({ left: i * scrollPerDot, behavior: 'smooth' });
-              });
-              dotsContainer.appendChild(dot);
-            }
+    const sections = document.querySelectorAll('section[id], header[id]');
+    const navLinks = document.querySelectorAll('.glass-nav a[href^="#"]');
+    
+    if (navLinks.length > 0) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('id');
+            navLinks.forEach(link => {
+              link.className = "text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1";
+              if (link.getAttribute('href') === `#${id}`) {
+                link.classList.add('nav-link-active');
+              }
+            });
           }
-          
-          const index = Math.round(slider.scrollLeft / scrollPerDot);
-          const dots = dotsContainer.querySelectorAll('div');
-          dots.forEach((dot, i) => {
-            if (i === index) {
-              dot.className = 'pagination-dot w-2.5 h-2.5 rounded-full bg-primary-container cursor-pointer transition-all';
-            } else {
-              dot.className = 'pagination-dot w-2 h-2 rounded-full bg-white/20 cursor-pointer transition-all hover:bg-white/40';
-            }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      
+      sections.forEach(section => observer.observe(section));
+    }
+
+    const faqs = document.querySelectorAll<HTMLDetailsElement>('#faq details');
+    faqs.forEach(faq => {
+      faq.addEventListener('toggle', () => {
+        if (faq.open) {
+          faqs.forEach(other => {
+            if (other !== faq) other.removeAttribute('open');
           });
         }
-      };
+      });
+    });
 
-      slider.addEventListener('scroll', updateDots);
-      window.addEventListener('resize', updateDots);
-      setTimeout(updateDots, 100); // Initial calculation
 
-      return () => {
-        slider.removeEventListener('scroll', updateDots);
-        window.removeEventListener('resize', updateDots);
-      };
-    }
-  }, [router]);
+
+    }, [router]);
 
   return (
     <>
@@ -168,16 +166,16 @@ export default function Page() {
 </div>
 <!-- Desktop Navigation Links (Hidden on md/tablet and below) -->
 <div class="hidden lg:flex gap-8 items-center">
-<a class="text-[#FFB77C] font-bold border-b-2 border-[#D38743] pb-1 font-['Bayon'] uppercase tracking-tight text-lg" href="#how-it-works-section">HOW IT WORKS</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#why-tqg">WHY TQG</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#social-proof">Testimonials</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#the-offer">THE OFFER</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#the-facility">THE FACILITY</a>
-<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg" href="#faq">FAQ</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#how-it-works-section">HOW IT WORKS</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#why-tqg">WHY TQG</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#social-proof">Testimonials</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#the-offer">THE OFFER</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#the-facility">THE FACILITY</a>
+<a class="text-white/80 hover:text-white transition-colors font-['Bayon'] uppercase tracking-tight text-lg border-b-2 border-transparent pb-1" href="#faq">FAQ</a>
 </div>
 <!-- Right Side Actions -->
 <div class="flex items-center gap-4">
-<button class="bg-primary-container text-on-primary-container px-4 md:px-6 py-2 rounded-full font-bold hover:scale-95 transition-all duration-150 text-sm md:text-base">Book Now</button>
+<button id="nav-book-now" class="bg-primary-container text-on-primary-container px-4 md:px-6 py-2 rounded-full font-bold hover:scale-95 transition-all duration-150 text-sm md:text-base">Book Now</button>
 <!-- Hamburger Menu Icon (Visible on mobile and tablet) -->
 <button class="lg:hidden text-white flex items-center justify-center p-1">
 <span class="material-symbols-outlined text-3xl">menu</span>
@@ -185,7 +183,7 @@ export default function Page() {
 </div>
 </nav>
 <!-- SECTION 1: HERO -->
-<header class="relative min-h-[70vh] flex items-center pt-32 pb-24 px-6 md:px-12 overflow-hidden bg-surface">
+<header class="relative min-h-[70vh] flex items-center py-28 px-6 md:px-12 overflow-hidden bg-surface">
 <div class="absolute inset-0 z-0">
 <img class="w-full h-full object-cover opacity-40" data-alt="cinematic wide shot of a golfer swinging in a high-tech indoor simulator with glowing Trackman data overlays on a massive screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGFj1hSjab2kigtzb70Hr7D8YDT5GeGclszEjkK8V5nwrKCd5FkWXaLWeYY3ZaN6Xwgg2kRouLVt8KYS2gipyo-xHPs5DJps3Pj3lnaU2J3b115GE1jTbTftxulac9dovetdKMhUPvTr-3xYWKtfUjpRsZjm5xhiJlpR8PMJu_d36POka3hX_KOKT7BeO5dFQ_C4tl5NaqphCR-uUcRg5atTUtiiernX2QW6ykPwoDlCvUvHKz53_jDLUj6yz5--Lrl_UkvVALoPc" style=""/>
 <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/60 to-transparent"></div>
@@ -243,12 +241,12 @@ export default function Page() {
 </div>
 </section>
 <!-- SECTION 2: PRIMARY OFFER -->
-<section class="py-24 px-6 md:px-12 bg-surface" id="the-offer">
+<section class="py-20 px-6 md:px-12 bg-surface-container-low" id="the-offer">
 <div class="max-w-7xl mx-auto">
-<h2 class="text-4xl md:text-5xl text-center mb-16" style="">Your TWO PATHS TO BETTER GOLF</h2>
+<h2 class="text-4xl md:text-5xl text-center mb-10" style="">Your TWO PATHS TO BETTER GOLF</h2>
 <div class="grid md:grid-cols-2 gap-8">
 <!-- Left Card -->
-<div class="bg-surface-container-low p-10 rounded-xl relative overflow-hidden group hover:bg-surface-container transition-colors duration-300">
+<div class="bg-surface p-10 rounded-xl relative overflow-hidden group transition-colors duration-300">
 <div class="flex justify-between items-start mb-8">
 <div>
 <span class="text-secondary font-bold uppercase tracking-widest text-sm font-label" style="">BASELINE CHECK</span>
@@ -264,7 +262,7 @@ export default function Page() {
 <button class="w-full py-4 border border-outline-variant hover:bg-surface-bright rounded-full transition-all uppercase font-bold tracking-tight" style="">Claim Your Free Bay</button>
 </div>
 <!-- Right Card -->
-<div class="bg-surface-container-low p-10 rounded-xl border-2 border-primary-container relative overflow-hidden">
+<div class="bg-surface p-10 rounded-xl border-2 border-primary-container relative overflow-hidden">
 <div class="absolute top-0 right-0 bg-primary-container text-on-primary-container px-4 py-1 text-xs font-bold uppercase tracking-tighter" style="">Best Value</div>
 <div class="flex justify-between items-start mb-8">
 <div>
@@ -286,102 +284,12 @@ export default function Page() {
 </div>
 </div>
 </section>
-<!-- SECTION 3: SOCIAL PROOF -->
-<section class="py-24 px-6 md:px-12 bg-surface-container-lowest overflow-hidden" id="social-proof">
-<div class="max-w-7xl mx-auto relative">
-<div class="mb-16 text-center md:text-left">
-<h2 class="text-4xl md:text-6xl text-white font-headline leading-tight" style="">REAL GOLFERS. REAL NUMBERS.</h2>
-<h3 class="text-3xl md:text-5xl font-headline mt-2" style="color: rgb(168, 152, 128);">HERE'S WHAT HAPPENS WHEN YOU STOP GUESSING.</h3>
-</div>
-<div class="relative flex items-center group/slider">
-<!-- Navigation Arrows -->
-<button class="slider-btn-left absolute z-10 p-2 md:p-4 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/10 transition-colors flex items-center justify-center left-2 md:-left-6" style="">
-<span class="material-symbols-outlined text-white" style="">chevron_left</span>
-</button>
-<div class="testimonial-slider flex overflow-x-auto gap-8 w-full snap-x snap-mandatory py-4">
-<!-- Card 1 -->
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
-<div>
-<div class="flex gap-1 mb-4">
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-</div>
-<p class="text-lg italic mb-6 font-body" style="">"The level of detail in the fitting process is unlike anything I've experienced. My dispersion tightened up immediately."</p>
-</div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— MARK S.</div>
-</div>
-<!-- Card 2 -->
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-primary-container text-on-primary-container p-8 rounded-xl flex flex-col justify-between shadow-2xl md:scale-105 z-10">
-<div>
-<div class="flex gap-1 mb-4">
-<span class="material-symbols-outlined text-on-primary-container" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-on-primary-container" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-on-primary-container" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-on-primary-container" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-on-primary-container" style='font-variation-settings: "FILL" 1;'>star</span>
-</div>
-<p class="text-lg italic mb-6 font-body" style="">"Traveled all the way from Ireland just to get my clubs dialed in here. Best facility in the country, period."</p>
-</div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— DAVID O., IRELAND</div>
-</div>
-<!-- Card 3 -->
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5">
-<div>
-<div class="flex gap-1 mb-4">
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span>
-</div>
-<p class="text-lg italic mb-6 font-body" style="">"Started as a 15 handicap, down to an 8 in four months thanks to the TrackMan data and professional guidance."</p>
-</div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— SARAH T.</div>
-</div>
-<!-- Placeholder Cards 4-10 (For full slider UX representation) -->
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5 opacity-80">
-<div><div class="flex gap-1 mb-4"><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span></div><p class="text-lg italic mb-6 font-body" style="">"The indoor facility is top-notch. I can practice in a t-shirt while it's snowing outside. Absolute game changer."</p></div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— JAMES L.</div>
-</div>
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5 opacity-80">
-<div><div class="flex gap-1 mb-4"><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span></div><p class="text-lg italic mb-6 font-body" style="">"I finally understand why I was slicing. The video analysis showed me exactly what my hands were doing."</p></div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— MICHAEL R.</div>
-</div>
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5 opacity-80">
-<div><div class="flex gap-1 mb-4"><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span></div><p class="text-lg italic mb-6 font-body" style="">"Best club fitting in Oklahoma. They don't push brands, they push performance that fits your swing."</p></div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— CHRIS K.</div>
-</div>
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5 opacity-80">
-<div><div class="flex gap-1 mb-4"><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span></div><p class="text-lg italic mb-6 font-body" style="">"TQG has the most welcoming atmosphere for women golfers. The staff is professional and extremely helpful."</p></div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— AMY W.</div>
-</div>
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5 opacity-80">
-<div><div class="flex gap-1 mb-4"><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span></div><p class="text-lg italic mb-6 font-body" style="">"Their custom repair shop saved my round. Fixed a snapped shaft and had it ready for my morning tee time."</p></div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— ROBERT P.</div>
-</div>
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5 opacity-80">
-<div><div class="flex gap-1 mb-4"><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span></div><p class="text-lg italic mb-6 font-body" style="">"The TrackMan 4 technology is insane. I've never seen my ball flight analyzed in such incredible detail."</p></div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— DANIEL M.</div>
-</div>
-<div class="min-w-full md:min-w-[calc(33.333%-1.35rem)] snap-start bg-surface-container p-8 rounded-xl flex flex-col justify-between border border-white/5 opacity-80">
-<div><div class="flex gap-1 mb-4"><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span><span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>star</span></div><p class="text-lg italic mb-6 font-body" style="">"Instruction here is worth every penny. My ball striking has never been more consistent."</p></div>
-<div class="font-label font-bold uppercase tracking-widest text-sm" style="">— JASON H.</div>
-</div>
-</div>
-<button class="slider-btn-right absolute z-10 p-2 md:p-4 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm border border-white/10 transition-colors flex items-center justify-center right-2 md:-right-6" style="">
-<span class="material-symbols-outlined text-white" style="">chevron_right</span>
-</button>
-</div>
-
-<!-- Pagination Dots -->
-<div id="pagination-dots-container" class="mt-12 flex flex-wrap items-center justify-center gap-3 min-h-[10px]">
-</div>
-</div>
-</section>
-<!-- SECTION 6: WHY TQG -->
+` }}
+      />
+      <TestimonialSlider />
+      <div
+        className="bg-surface text-on-surface"
+        dangerouslySetInnerHTML={{ __html: `<!-- SECTION 6: WHY TQG -->
 <section class="py-24 px-6 md:px-12 bg-surface" id="why-tqg">
 <div class="max-w-7xl mx-auto mb-16 relative">
 <span class="material-symbols-outlined absolute top-0 right-0 text-primary-container text-6xl opacity-30" style="">precision_manufacturing</span>
@@ -533,10 +441,10 @@ export default function Page() {
 <div>
 <h5 class="font-['Bayon'] text-xl text-[#FFB77C] mb-6" style="">SERVICES</h5>
 <ul class="space-y-4 font-['Open_Sans'] text-sm">
-<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#" style="">Full Bag Fitting</a></li>
-<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#" style="">PGA Instruction</a></li>
-<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#" style="">TrackMan Rental</a></li>
-<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#" style="">Club Repair</a></li></ul>
+<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#why-tqg" style="">Full Bag Fitting</a></li>
+<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#why-tqg" style="">PGA Instruction</a></li>
+<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#why-tqg" style="">TrackMan Rental</a></li>
+<li class="" style=""><a class="text-gray-400 hover:text-[#78D6D0] transition-colors" href="#why-tqg" style="">Club Repair</a></li></ul>
 </div>
 <div>
 <h5 class="font-['Bayon'] text-xl text-[#FFB77C] mb-6" style="">COMPANY</h5>
