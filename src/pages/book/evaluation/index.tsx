@@ -34,7 +34,7 @@ export default function EvaluationDatePage() {
         </div>
         {/* Calendar Workspace (Using our specialized widget instead of the raw HTML container) */}
         <div className="w-full max-w-4xl flex flex-col items-center">
-          <CalendarWidget onDateTimeSelect={handleDateTimeSelect} maxHeight={600} />
+          <CalendarWidget onDateTimeSelect={handleDateTimeSelect} maxHeight={600} bookingType="evaluation" />
           
           {/* Continue Button */}
           {selectedTime && (

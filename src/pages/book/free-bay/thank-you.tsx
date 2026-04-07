@@ -28,7 +28,7 @@ const FAQ_ITEMS = [
 
 export default function FreeBayThankYouPage() {
   const router = useRouter();
-  const { date, time, name } = router.query;
+  const { date, time, name, bayName } = router.query;
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const formatDate = (dateStr: string) => {
@@ -73,6 +73,12 @@ export default function FreeBayThankYouPage() {
                     6006 S Sheridan Rd, Suite A<br />Tulsa, OK 74145
                   </p>
                 </div>
+                {bayName && (
+                  <div className="flex items-center gap-4">
+                    <span className="material-symbols-outlined text-secondary">sports_golf</span>
+                    <p className="font-bold uppercase tracking-wider text-sm text-white">{decodeURIComponent(bayName as string)} — TrackMan</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-10 flex flex-wrap gap-4 justify-start">

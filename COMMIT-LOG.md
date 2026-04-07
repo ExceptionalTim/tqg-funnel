@@ -3,8 +3,89 @@
 ## Diagnostic Summary
 - **Tests**: No `test` script or testing framework configured.
 - **TypeScript**: `tsc --noEmit` passes with zero errors.
-- **Build**: `npm run build` succeeds — 14 pages + 3 API routes compiled. No warnings.
-- **Security**: Full audit completed. No API keys, secrets, or PII in source code. `.env.local` is gitignored. Stripe secret key is server-side only. New `get-payment` API returns only non-sensitive fields (id, amount, currency, status, metadata).
+- **Build**: `npm run build` succeeds — 14 pages + 5 API routes compiled. No warnings.
+- **Security**: Google Service Account key stored as base64 in `.env.local` (gitignored). No secrets in source. Calendar IDs are hardcoded constants (non-sensitive).
+- **API verification**: Free bay returns 18 slots (30-min), evaluation returns 17 slots (60-min), Sunday returns 0 slots. All correct.
+
+---
+
+## Commit 8: Google Calendar Availability & Booking Integration
+
+### NEW: `src/lib/google-calendar.ts`
+- **What was changed**: Core server-side module for Google Calendar API integration:
+  - **Auth**: Decodes base64 service account key from env, creates `google.auth.JWT` with domain-wide delegation to impersonate `bays@tourqualitygolf.com` (for bay calendars) and instructor emails (for their calendars).
+  - **Calendar constants**: All 5 bay calendar IDs and 2 instructor calendar IDs hardcoded.
+  - **`getAvailableSlots(date, type)`**: Uses Google FreeBusy API to batch-query all relevant calendars. Generates candidate slots (30-min for free-bay starting 10am–6:30pm, 60-min for evaluation starting 10am–6pm). Filters to slots where at least 1 bay is free (+ 1 instructor for evaluations).
+  - **`bookSlot(params)`**: Re-checks availability (race condition prevention), picks a random available bay (+ instructor for evaluations), creates Google Calendar events via `calendar.events.insert`. Returns assigned bay/instructor names.
+  - Timezone: `America/Chicago` (Central Time) with CDT offset for date queries.
+- **Why**: Central availability engine that all current and future funnels will use. Google Calendar is the sole source of truth — no database needed.
+
+### NEW: `src/pages/api/availability.ts`
+- **What was changed**: `GET /api/availability?date=YYYY-MM-DD&type=free-bay|evaluation` — validates params (date format, not past, not Sunday), calls `getAvailableSlots()`, returns `{ slots: [...] }`.
+- **Why**: CalendarWidget needs real-time availability data when user selects a date.
+
+### NEW: `src/pages/api/book.ts`
+- **What was changed**: `POST /api/book` — accepts `{ date, time, type, firstName, lastName, email, phone, notes?, paymentIntentId? }`. For evaluations, verifies Stripe payment succeeded before creating events. Calls `bookSlot()` which re-checks availability. Returns `{ success, bayName, instructorName? }` or `409` if slot was taken.
+- **Why**: Creates actual Google Calendar events when bookings are confirmed. Server-side payment verification prevents unpaid evaluation bookings.
+
+### MODIFIED: `src/components/CalendarWidget.tsx`
+- **What was changed**:
+  - Added `bookingType: 'free-bay' | 'evaluation'` prop.
+  - Removed all mock availability data (`MOCK_AVAILABILITY`, `fullDaySlots`).
+  - Added `useEffect` that fetches `/api/availability` whenever `selectedDate` or `bookingType` changes.
+  - Added loading spinner while fetching, error state with "Try again" button, "No availability" message for empty results.
+  - `isDateDisabled` simplified: only checks for past dates and Sundays (no longer references mock data).
+- **Why**: Replace hardcoded mock slots with live Google Calendar availability.
+
+### MODIFIED: `src/pages/book/free-bay/index.tsx`
+- **What was changed**: Pass `bookingType="free-bay"` to CalendarWidget.
+- **Why**: CalendarWidget now requires this prop to determine slot duration (30 min).
+
+### MODIFIED: `src/pages/book/evaluation/index.tsx`
+- **What was changed**: Pass `bookingType="evaluation"` to CalendarWidget.
+- **Why**: CalendarWidget uses this to determine slot duration (60 min) and query instructor availability.
+
+### MODIFIED: `src/pages/book/free-bay/contact.tsx`
+- **What was changed**:
+  - `handleSubmit` now calls `POST /api/book` instead of directly redirecting to thank-you.
+  - Added `submitting` state: button shows spinner and disables during booking.
+  - Added `bookingError` state: displays error message if booking fails (409 slot taken, server error).
+  - On success: redirects to thank-you with `bayName` from API response.
+  - DataLayer `form_submission` event only fires after successful booking (not before).
+- **Why**: Booking must create a real calendar event before confirming to the user. Race condition handling via 409 error.
+
+### MODIFIED: `src/pages/book/evaluation/thank-you.tsx`
+- **What was changed**:
+  - After payment verification, calls `POST /api/book` to create calendar events with data from Stripe PaymentIntent metadata.
+  - Added `bayName`, `instructorName`, and `bookingError` state.
+  - Uses localStorage key `booking_{pi_id}` to cache booking result and prevent duplicate calendar events on page refresh.
+  - Hardcoded "Ross MacDonald" and "Bay 2 — TrackMan" replaced with dynamic values from booking API response. Falls back to "Assigned at check-in" while loading.
+  - Added booking error display with phone number to call for manual resolution.
+- **Why**: Calendar events must be created after payment, with deduplication. Dynamic assignment replaces hardcoded instructor/bay.
+
+### MODIFIED: `src/pages/book/free-bay/thank-you.tsx`
+- **What was changed**: Accepts `bayName` from query params. Displays assigned bay name with TrackMan label in the booking summary card.
+- **Why**: Show user which bay they've been assigned to.
+
+### MODIFIED: `package.json` / `package-lock.json`
+- **What was changed**: Added `googleapis` v148.0.0 (Google APIs Node.js client).
+- **Why**: Required for Google Calendar FreeBusy and Events API access.
+
+### NEW: `.env.local` entry (NOT committed)
+- Added `GOOGLE_SERVICE_ACCOUNT_KEY` (base64-encoded service account JSON).
+
+### Diagnostic Results
+- **TypeScript**: Zero errors.
+- **Build**: 14 pages + 5 API routes (`availability`, `book`, `create-payment-intent`, `get-payment`, `hello`).
+- **API tests**: Free bay → 18 slots, Evaluation → 17 slots, Sunday → 0 slots. All correct.
+- **Files changed**: 8 modified + 3 new = 11 total (821 insertions, 100 deletions).
+
+### Potential Risks
+- **DST offset hardcoded**: `timeMin`/`timeMax` use `-05:00` (CDT). This is correct for April 2026 but will be wrong during CST (Nov–Mar). A proper timezone library (e.g., `date-fns-tz`) should be added for production.
+- **Vercel env var**: `GOOGLE_SERVICE_ACCOUNT_KEY` must be added to Vercel Environment Variables for deployed version to work.
+- **No race condition lock**: Re-checks availability before booking but doesn't hold a lock. With 5 bays, true conflicts are extremely rare. 409 errors are handled gracefully in the UI.
+- **Domain-wide delegation**: The service account impersonates `bays@tourqualitygolf.com` and instructor emails. If these accounts are deactivated or renamed, the integration breaks.
+- **No cleanup on partial failure**: If bay event is created but instructor event fails (evaluation), the bay event remains orphaned. This is acceptable at current volume — manual cleanup via Google Calendar.
 
 ---
 

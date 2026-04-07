@@ -29,6 +29,8 @@ export default function FreeBayContactPage() {
   const { date, time } = router.query;
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [phone, setPhone] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   const formatDate = (dateStr: string) => {
     try {
@@ -37,7 +39,7 @@ export default function FreeBayContactPage() {
     } catch { return dateStr; }
   };
 
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const newErrors: Record<string, string> = {};
@@ -56,19 +58,59 @@ export default function FreeBayContactPage() {
       return;
     }
 
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      event: 'form_submission',
-      form_name: 'Free Bay Form Submission',
-      user_data: {
-        email: emailVal,
-        first_name: (form.get('first_name') as string).trim(),
-        last_name: (form.get('last_name') as string).trim(),
-        phone: phoneVal,
-      },
-    });
+    const firstName = (form.get('first_name') as string).trim();
+    const lastName = (form.get('last_name') as string).trim();
 
-    router.push(`/book/free-bay/thank-you?date=${date}&time=${time}&name=${encodeURIComponent(form.get('first_name') as string)}`);
+    setSubmitting(true);
+    setBookingError(null);
+
+    try {
+      const res = await fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: date as string,
+          time: decodeURIComponent(time as string),
+          type: 'free-bay',
+          firstName,
+          lastName,
+          email: emailVal,
+          phone: phoneVal,
+          notes: (form.get('notes') as string || '').trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 409) {
+        setBookingError('This time slot was just booked. Please go back and select another time.');
+        setSubmitting(false);
+        return;
+      }
+
+      if (!res.ok) {
+        setBookingError(data.error || 'Failed to book. Please try again.');
+        setSubmitting(false);
+        return;
+      }
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'form_submission',
+        form_name: 'Free Bay Form Submission',
+        user_data: {
+          email: emailVal,
+          first_name: firstName,
+          last_name: lastName,
+          phone: phoneVal,
+        },
+      });
+
+      router.push(`/book/free-bay/thank-you?date=${date}&time=${time}&name=${encodeURIComponent(firstName)}&bayName=${encodeURIComponent(data.bayName || '')}`);
+    } catch {
+      setBookingError('Failed to connect to booking server. Please try again.');
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -140,9 +182,26 @@ export default function FreeBayContactPage() {
                 <textarea className="w-full bg-[#0A0A0A] border-outline-variant/30 text-white rounded-lg px-4 py-3 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all resize-none" id="notes" name="notes" placeholder="e.g. Bringing my own clubs, left-handed, etc." rows={3} />
               </div>
               <p className="text-xs text-on-surface-variant text-center opacity-60">Your information is never shared or sold. We'll only contact you about your booking.</p>
+              {bookingError && (
+                <div className="p-4 rounded-lg bg-error-container/20 text-error text-sm flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base">error</span>
+                  {bookingError}
+                </div>
+              )}
               <div className="flex flex-col items-center gap-6 pt-4">
-                <button className="w-full py-5 px-8 bg-primary-container text-on-primary-container font-black text-lg rounded-full shadow-xl hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-tight" type="submit">
-                  Confirm My Free Session
+                <button
+                  className={`w-full py-5 px-8 bg-primary-container text-on-primary-container font-black text-lg rounded-full shadow-xl transition-all uppercase tracking-tight ${submitting ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-110 active:scale-[0.98]'}`}
+                  type="submit"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <span className="flex items-center justify-center gap-3">
+                      <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                      Booking...
+                    </span>
+                  ) : (
+                    'Confirm My Free Session'
+                  )}
                 </button>
                 <button type="button" onClick={() => router.push('/book/free-bay')} className="flex items-center gap-2 text-on-surface-variant text-sm font-semibold hover:text-on-surface transition-colors">
                   <span className="material-symbols-outlined text-base">arrow_back</span>

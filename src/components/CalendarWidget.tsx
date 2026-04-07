@@ -1,37 +1,11 @@
 'use client';
-import { useState, useMemo, useCallback } from 'react';
-
-// ============================================================
-// TODO: GOOGLE WORKSPACE CALENDAR API INTEGRATION
-// Replace the mock availability data below with a real API call
-// to Google Calendar API using the organization's shared calendar.
-//
-// Required: googleapis npm package + service account credentials
-// Endpoint: calendar.events.list({ calendarId: 'YOUR_CALENDAR_ID' })
-// The API should return busy/free slots for the selected date range.
-// ============================================================
+import { useState, useMemo, useCallback, useEffect } from 'react';
 
 interface CalendarWidgetProps {
   onDateTimeSelect: (date: Date, time: string) => void;
   maxHeight?: number;
+  bookingType: 'free-bay' | 'evaluation';
 }
-
-// Mock availability data — replace with Google Calendar API response
-const fullDaySlots = [
-  '10:00am', '10:30am', '11:00am', '11:30am', '12:00pm', '12:30pm', 
-  '1:00pm', '1:30pm', '2:00pm', '2:30pm', '3:00pm', '3:30pm', 
-  '4:00pm', '4:30pm', '5:00pm', '5:30pm', '6:00pm'
-];
-
-const MOCK_AVAILABILITY: Record<string, string[]> = {
-  'Mon': fullDaySlots,
-  'Tue': fullDaySlots,
-  'Wed': fullDaySlots,
-  'Thu': fullDaySlots,
-  'Fri': fullDaySlots,
-  'Sat': fullDaySlots,
-  'Sun': [], // Closed Sundays
-};
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -44,11 +18,10 @@ function getFirstDayOfMonth(year: number, month: number): number {
   return new Date(year, month, 1).getDay();
 }
 
-export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600 }: CalendarWidgetProps) {
+export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, bookingType }: CalendarWidgetProps) {
   const today = new Date();
   const isSunday = today.getDay() === 0;
 
-  // Default to today, unless today is Sunday, then default to tomorrow (Monday)
   const defaultDate = new Date(today);
   if (isSunday) {
     defaultDate.setDate(defaultDate.getDate() + 1);
@@ -58,16 +31,48 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600 }: Ca
   const [currentYear, setCurrentYear] = useState(defaultDate.getFullYear());
   const [selectedDate, setSelectedDate] = useState<Date>(defaultDate);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [slotsError, setSlotsError] = useState<string | null>(null);
+
+  // Fetch availability when selectedDate or bookingType changes
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    const day = selectedDate.getDay();
+    if (day === 0) {
+      setAvailableSlots([]);
+      return;
+    }
+
+    const dateStr = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
+
+    setLoadingSlots(true);
+    setSlotsError(null);
+    setAvailableSlots([]);
+
+    fetch(`/api/availability?date=${dateStr}&type=${bookingType}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          setSlotsError(data.error);
+        } else {
+          setAvailableSlots(data.slots || []);
+        }
+      })
+      .catch(() => setSlotsError('Failed to load availability. Please try again.'))
+      .finally(() => setLoadingSlots(false));
+  }, [selectedDate, bookingType]);
 
   const daysInMonth = useMemo(() => getDaysInMonth(currentYear, currentMonth), [currentYear, currentMonth]);
   const firstDay = useMemo(() => getFirstDayOfMonth(currentYear, currentMonth), [currentYear, currentMonth]);
 
   const isDateDisabled = useCallback((day: number) => {
     const date = new Date(currentYear, currentMonth, day);
-    const dayName = DAYS_OF_WEEK[date.getDay()];
-    // Past dates or no availability
+    // Past dates
     if (date < new Date(today.getFullYear(), today.getMonth(), today.getDate())) return true;
-    if (!MOCK_AVAILABILITY[dayName] || MOCK_AVAILABILITY[dayName].length === 0) return true;
+    // Sundays
+    if (date.getDay() === 0) return true;
     return false;
   }, [currentYear, currentMonth, today]);
 
@@ -116,18 +121,10 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600 }: Ca
     }
   };
 
-  // Get available times for the selected date
-  const availableTimes = useMemo(() => {
-    if (!selectedDate) return [];
-    const dayName = DAYS_OF_WEEK[selectedDate.getDay()];
-    return MOCK_AVAILABILITY[dayName] || [];
-  }, [selectedDate]);
-
   const selectedDayLabel = selectedDate
     ? `${DAYS_OF_WEEK[selectedDate.getDay()]}, ${MONTH_NAMES[selectedDate.getMonth()]} ${selectedDate.getDate()}`
     : '';
 
-  // Prevent navigating to past months
   const canGoPrev = currentYear > today.getFullYear() || (currentYear === today.getFullYear() && currentMonth > today.getMonth());
 
   return (
@@ -138,7 +135,6 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600 }: Ca
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left: Calendar Grid */}
         <div className="space-y-4">
-          {/* Month Navigation */}
           <div className="flex items-center justify-between">
             <button
               onClick={prevMonth}
@@ -158,18 +154,14 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600 }: Ca
             </button>
           </div>
 
-          {/* Day Headers */}
           <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold uppercase tracking-wider text-on-surface-variant">
             {DAYS_OF_WEEK.map(d => <div key={d} className="py-1">{d}</div>)}
           </div>
 
-          {/* Day Grid */}
           <div className="grid grid-cols-7 gap-1">
-            {/* Empty cells for offset */}
             {Array.from({ length: firstDay }, (_, i) => (
               <div key={`empty-${i}`} className="aspect-square" />
             ))}
-            {/* Day buttons */}
             {Array.from({ length: daysInMonth }, (_, i) => {
               const day = i + 1;
               const disabled = isDateDisabled(day);
@@ -196,7 +188,6 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600 }: Ca
             })}
           </div>
 
-          {/* Timezone */}
           <div className="pt-4 space-y-1">
             <h4 className="text-xs font-bold text-on-surface" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Time zone
@@ -213,11 +204,31 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600 }: Ca
           <h3 className="text-lg font-bold text-on-surface mb-4" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             {selectedDayLabel}
           </h3>
-          {availableTimes.length === 0 ? (
+          {loadingSlots ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
+              <span className="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
+              <p className="text-on-surface-variant text-sm">Loading availability...</p>
+            </div>
+          ) : slotsError ? (
+            <div className="text-center py-8">
+              <span className="material-symbols-outlined text-error text-3xl mb-3 block">error</span>
+              <p className="text-on-surface-variant text-sm mb-3">{slotsError}</p>
+              <button
+                onClick={() => {
+                  // Re-trigger fetch by toggling selectedDate
+                  const d = new Date(selectedDate);
+                  setSelectedDate(new Date(d));
+                }}
+                className="text-primary underline text-sm"
+              >
+                Try again
+              </button>
+            </div>
+          ) : availableSlots.length === 0 ? (
             <p className="text-on-surface-variant text-sm italic">No availability on this date.</p>
           ) : (
             <div className="flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: '380px' }}>
-              {availableTimes.map(time => (
+              {availableSlots.map(time => (
                 <button
                   key={time}
                   onClick={() => handleTimeClick(time)}

@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import BookingLayout from '../../../components/BookingLayout';
 import TestimonialSlider from '../../../components/TestimonialSlider';
 
@@ -35,6 +35,10 @@ const FAQ_ITEMS = [
 export default function EvaluationThankYouPage() {
   const router = useRouter();
   const { date, time, name, payment_intent } = router.query;
+  const [bayName, setBayName] = useState<string | null>(null);
+  const [instructorName, setInstructorName] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+
   const formatDate = (dateStr: string) => {
     try {
       const d = new Date(dateStr + 'T12:00:00');
@@ -47,44 +51,89 @@ export default function EvaluationThankYouPage() {
 
     const piId = payment_intent as string;
     const storageKey = `dl_purchase_${piId}`;
+    const bookingKey = `booking_${piId}`;
 
-    // Check localStorage — if this payment_intent was already pushed, skip entirely
+    // Check localStorage — if already processed, restore cached booking data
     try {
-      if (localStorage.getItem(storageKey)) return;
-    } catch { /* localStorage unavailable — fall through and push */ }
+      const cached = localStorage.getItem(bookingKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setBayName(parsed.bayName || null);
+        setInstructorName(parsed.instructorName || null);
+        return;
+      }
+    } catch { /* fall through */ }
 
     fetch(`/api/get-payment?payment_intent=${encodeURIComponent(piId)}`)
       .then(res => res.json())
-      .then(data => {
+      .then(async (data) => {
         if (data.error || data.status !== 'succeeded') return;
 
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'purchase',
-          ecommerce: {
-            transaction_id: data.id,
-            value: data.amount / 100,
-            currency: data.currency.toUpperCase(),
-            items: [{
-              item_name: data.metadata?.product || 'Performance Evaluation',
-              item_category: 'Golf Services',
-              price: data.amount / 100,
-              quantity: 1,
-            }],
-          },
-          user_data: {
-            email: data.metadata?.email || '',
-            first_name: data.metadata?.first_name || '',
-            last_name: data.metadata?.last_name || '',
-            phone: data.metadata?.phone || '',
-          },
-        });
+        // Push dataLayer purchase event (only once)
+        try {
+          if (!localStorage.getItem(storageKey)) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              event: 'purchase',
+              ecommerce: {
+                transaction_id: data.id,
+                value: data.amount / 100,
+                currency: data.currency.toUpperCase(),
+                items: [{
+                  item_name: data.metadata?.product || 'Performance Evaluation',
+                  item_category: 'Golf Services',
+                  price: data.amount / 100,
+                  quantity: 1,
+                }],
+              },
+              user_data: {
+                email: data.metadata?.email || '',
+                first_name: data.metadata?.first_name || '',
+                last_name: data.metadata?.last_name || '',
+                phone: data.metadata?.phone || '',
+              },
+            });
+            localStorage.setItem(storageKey, '1');
+          }
+        } catch { /* ignore localStorage errors */ }
 
-        // Mark this payment_intent as pushed so it never fires again
-        try { localStorage.setItem(storageKey, '1'); } catch { /* ignore */ }
+        // Book the calendar slot (only once)
+        try {
+          const bookRes = await fetch('/api/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              date: date as string,
+              time: time ? decodeURIComponent(time as string) : '',
+              type: 'evaluation',
+              firstName: data.metadata?.first_name || '',
+              lastName: data.metadata?.last_name || '',
+              email: data.metadata?.email || '',
+              phone: data.metadata?.phone || '',
+              paymentIntentId: piId,
+            }),
+          });
+
+          const bookData = await bookRes.json();
+
+          if (bookRes.ok && bookData.success) {
+            setBayName(bookData.bayName);
+            setInstructorName(bookData.instructorName);
+            try {
+              localStorage.setItem(bookingKey, JSON.stringify({
+                bayName: bookData.bayName,
+                instructorName: bookData.instructorName,
+              }));
+            } catch { /* ignore */ }
+          } else if (bookRes.status === 409) {
+            setBookingError('This time slot was just booked by someone else. Please call us at (918) 221-7096 to reschedule.');
+          }
+        } catch {
+          setBookingError('Could not create calendar booking. Please call us at (918) 221-7096 to confirm.');
+        }
       })
       .catch(() => { /* silently fail — don't block the thank-you page */ });
-  }, [router.isReady, payment_intent]);
+  }, [router.isReady, payment_intent, date, time]);
 
   const displayName = name ? decodeURIComponent(name as string).toUpperCase() : 'GOLFER';
 
@@ -123,11 +172,11 @@ export default function EvaluationThankYouPage() {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-secondary">person</span>
-                  <p className="font-bold uppercase tracking-wider text-sm text-white">Your Coach: Ross MacDonald</p>
+                  <p className="font-bold uppercase tracking-wider text-sm text-white">Your Coach: {instructorName || 'Assigned at check-in'}</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-secondary">sports_golf</span>
-                  <p className="font-bold uppercase tracking-wider text-sm text-white">Bay 2 — TrackMan</p>
+                  <p className="font-bold uppercase tracking-wider text-sm text-white">{bayName ? `${bayName} — TrackMan` : 'Bay assigned at check-in'}</p>
                 </div>
               </div>
             </div>
@@ -139,6 +188,12 @@ export default function EvaluationThankYouPage() {
                 <span className="material-symbols-outlined text-sm">calendar_add_on</span> Add to Apple Calendar
               </button>
             </div>
+            {bookingError && (
+              <div className="mt-6 p-4 rounded-lg bg-error-container/20 text-error text-sm flex items-start gap-3">
+                <span className="material-symbols-outlined text-base mt-0.5">warning</span>
+                <p>{bookingError}</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

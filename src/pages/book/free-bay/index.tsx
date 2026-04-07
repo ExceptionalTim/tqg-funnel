@@ -33,7 +33,7 @@ export default function FreeBayDatePage() {
         </div>
 
         {/* Calendar Widget */}
-        <CalendarWidget onDateTimeSelect={handleDateTimeSelect} maxHeight={600} />
+        <CalendarWidget onDateTimeSelect={handleDateTimeSelect} maxHeight={600} bookingType="free-bay" />
 
         {/* Continue Button */}
         {selectedTime && (
