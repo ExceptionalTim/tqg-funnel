@@ -1,33 +1,142 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { loadStripe, Appearance } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import BookingLayout from '../../../components/BookingLayout';
 
-// ============================================================
-// TODO: STRIPE INTEGRATION
-// Replace the mock payment flow below with Stripe Elements.
-//
-// Required packages: @stripe/stripe-js, @stripe/react-stripe-js
-// Required env vars:
-//   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_XXXXXXXXXXXX
-//   STRIPE_SECRET_KEY=sk_test_XXXXXXXXXXXX
-//
-// Implementation steps:
-// 1. Create a Next.js API route at /api/create-payment-intent
-//    that calls stripe.paymentIntents.create({ amount: 7500, currency: 'usd' })
-// 2. Use loadStripe() and Elements provider to wrap the checkout form
-// 3. Use CardElement or PaymentElement from @stripe/react-stripe-js
-// 4. On successful payment, redirect to thank-you page
-// ============================================================
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-const PLACEHOLDER_STRIPE_KEY = 'pk_test_PLACEHOLDER_REPLACE_WITH_REAL_KEY';
+const appearance: Appearance = {
+  theme: 'night',
+  variables: {
+    colorPrimary: '#d38743',
+    colorBackground: '#0A0A0A',
+    colorText: '#e2e2e2',
+    colorTextSecondary: '#d8c2b4',
+    colorDanger: '#ffb4ab',
+    fontFamily: "'Open Sans', sans-serif",
+    borderRadius: '8px',
+    spacingUnit: '4px',
+  },
+  rules: {
+    '.Input': {
+      backgroundColor: '#0A0A0A',
+      border: '1px solid rgba(83, 68, 57, 0.3)',
+      padding: '12px 16px',
+      color: '#ffffff',
+      fontSize: '14px',
+    },
+    '.Input:focus': {
+      borderColor: '#d38743',
+      boxShadow: '0 0 0 1px #d38743',
+    },
+    '.Label': {
+      color: '#d8c2b4',
+      fontSize: '12px',
+      fontWeight: '700',
+      textTransform: 'uppercase' as const,
+      letterSpacing: '0.05em',
+    },
+    '.Tab': {
+      backgroundColor: '#1b1b1b',
+      borderColor: 'rgba(83, 68, 57, 0.1)',
+      color: '#d8c2b4',
+    },
+    '.Tab--selected': {
+      backgroundColor: '#1f1f1f',
+      borderColor: '#d38743',
+      color: '#e2e2e2',
+    },
+  },
+};
+
+function CheckoutForm({ date, time, name: bookingName }: { date: string; time: string; name: string }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const router = useRouter();
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setProcessing(true);
+    setError(null);
+
+    const returnUrl = `${window.location.origin}/book/evaluation/thank-you?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&name=${encodeURIComponent(bookingName)}`;
+
+    const { error: stripeError } = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: returnUrl },
+    });
+
+    // Only reaches here if there's an error (successful payments redirect automatically)
+    if (stripeError) {
+      setError(stripeError.message || 'Payment failed. Please try again.');
+    }
+    setProcessing(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="flex items-center gap-3 mb-6">
+        <span className="material-symbols-outlined text-secondary">lock</span>
+        <h3 className="text-xs font-bold tracking-widest text-secondary" style={{ fontFamily: "'Open Sans', sans-serif" }}>SECURE PAYMENT</h3>
+      </div>
+
+      <PaymentElement />
+
+      {error && (
+        <div className="mt-4 p-3 rounded-lg bg-error-container/20 text-error text-sm flex items-center gap-2">
+          <span className="material-symbols-outlined text-base">error</span>
+          {error}
+        </div>
+      )}
+
+      <div className="mt-8 space-y-4">
+        <button
+          type="submit"
+          disabled={!stripe || !elements || processing}
+          className={`w-full py-5 px-8 bg-primary-container text-on-primary-container font-black text-lg rounded-full shadow-xl uppercase tracking-tight transition-all ${
+            processing || !stripe ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-110 active:scale-[0.98]'
+          }`}
+        >
+          {processing ? (
+            <span className="flex items-center justify-center gap-3">
+              <span className="material-symbols-outlined animate-spin">progress_activity</span>
+              Processing...
+            </span>
+          ) : (
+            'Pay $75 & Confirm Booking'
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="w-full flex items-center justify-center gap-2 text-on-surface-variant text-sm font-semibold hover:text-on-surface transition-colors"
+        >
+          <span className="material-symbols-outlined text-base">arrow_back</span>
+          Go back
+        </button>
+      </div>
+
+      <div className="mt-6 flex items-center justify-center gap-4 text-on-surface-variant/40 text-xs">
+        <span className="material-symbols-outlined text-base">lock</span>
+        <span>256-bit SSL Encryption</span>
+        <span>•</span>
+        <span>Powered by Stripe</span>
+      </div>
+    </form>
+  );
+}
 
 export default function EvaluationPaymentPage() {
   const router = useRouter();
-  const { date, time, name, email } = router.query;
-  const [processing, setProcessing] = useState(false);
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
+  const { date, time, name, last_name, email, phone } = router.query;
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const formatDate = (dateStr: string) => {
     try {
@@ -36,22 +145,31 @@ export default function EvaluationPaymentPage() {
     } catch { return dateStr; }
   };
 
-  const handlePayment = async () => {
-    setProcessing(true);
+  useEffect(() => {
+    if (!router.isReady) return;
 
-    // ============================================================
-    // TODO: Replace this mock with real Stripe PaymentIntent flow
-    // const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-    //   payment_method: { card: cardElement }
-    // });
-    // ============================================================
-
-    // Mock payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    setProcessing(false);
-    router.push(`/book/evaluation/thank-you?date=${date}&time=${time}&name=${name}`);
-  };
+    fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: date || '',
+        time: time || '',
+        name: name || '',
+        last_name: last_name || '',
+        email: email || '',
+        phone: phone || '',
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        } else {
+          setLoadError(data.error || 'Failed to initialize payment');
+        }
+      })
+      .catch(() => setLoadError('Failed to connect to payment server'));
+  }, [router.isReady, date, time, name, email]);
 
   const displayName = name ? decodeURIComponent(name as string) : '';
 
@@ -100,84 +218,31 @@ export default function EvaluationPaymentPage() {
 
           {/* Payment Form */}
           <div className="bg-surface-container-low p-8 rounded-xl border border-outline-variant/10 shadow-2xl">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="material-symbols-outlined text-secondary">lock</span>
-              <h3 className="text-xs font-bold tracking-widest text-secondary" style={{ fontFamily: "'Open Sans', sans-serif" }}>SECURE PAYMENT</h3>
-            </div>
-
-            {/* Mock Card Form — Replace with Stripe Elements */}
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Card Number</label>
-                <input
-                  className="w-full bg-[#0A0A0A] border-outline-variant/30 text-white rounded-lg px-4 py-3 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all"
-                  placeholder="4242 4242 4242 4242"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  type="text"
-                  maxLength={19}
+            {loadError ? (
+              <div className="text-center py-8">
+                <span className="material-symbols-outlined text-error text-4xl mb-4 block">error</span>
+                <p className="text-error">{loadError}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-4 text-primary underline text-sm"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : clientSecret ? (
+              <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+                <CheckoutForm
+                  date={(date as string) || ''}
+                  time={(time as string) || ''}
+                  name={(name as string) || ''}
                 />
+              </Elements>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <span className="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
+                <p className="text-on-surface-variant text-sm">Loading secure payment...</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">Expiry</label>
-                  <input
-                    className="w-full bg-[#0A0A0A] border-outline-variant/30 text-white rounded-lg px-4 py-3 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all"
-                    placeholder="MM / YY"
-                    value={cardExpiry}
-                    onChange={(e) => setCardExpiry(e.target.value)}
-                    type="text"
-                    maxLength={7}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">CVC</label>
-                  <input
-                    className="w-full bg-[#0A0A0A] border-outline-variant/30 text-white rounded-lg px-4 py-3 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all"
-                    placeholder="123"
-                    value={cardCvc}
-                    onChange={(e) => setCardCvc(e.target.value)}
-                    type="text"
-                    maxLength={4}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 space-y-4">
-              <button
-                onClick={handlePayment}
-                disabled={processing}
-                className={`w-full py-5 px-8 bg-primary-container text-on-primary-container font-black text-lg rounded-full shadow-xl uppercase tracking-tight transition-all ${
-                  processing ? 'opacity-60 cursor-not-allowed' : 'hover:brightness-110 active:scale-[0.98]'
-                }`}
-              >
-                {processing ? (
-                  <span className="flex items-center justify-center gap-3">
-                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                    Processing...
-                  </span>
-                ) : (
-                  'Pay $75 & Confirm Booking'
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="w-full flex items-center justify-center gap-2 text-on-surface-variant text-sm font-semibold hover:text-on-surface transition-colors"
-              >
-                <span className="material-symbols-outlined text-base">arrow_back</span>
-                Go back
-              </button>
-            </div>
-
-            <div className="mt-6 flex items-center justify-center gap-4 text-on-surface-variant/40 text-xs">
-              <span className="material-symbols-outlined text-base">lock</span>
-              <span>256-bit SSL Encryption</span>
-              <span>•</span>
-              <span>Powered by Stripe</span>
-            </div>
+            )}
           </div>
         </div>
       </section>

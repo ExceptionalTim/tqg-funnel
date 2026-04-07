@@ -1,6 +1,13 @@
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import BookingLayout from '../../../components/BookingLayout';
 import TestimonialSlider from '../../../components/TestimonialSlider';
+
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
 
 const FAQ_ITEMS = [
   {
@@ -27,13 +34,57 @@ const FAQ_ITEMS = [
 
 export default function EvaluationThankYouPage() {
   const router = useRouter();
-  const { date, time, name } = router.query;
+  const { date, time, name, payment_intent } = router.query;
   const formatDate = (dateStr: string) => {
     try {
       const d = new Date(dateStr + 'T12:00:00');
       return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     } catch { return dateStr; }
   };
+
+  useEffect(() => {
+    if (!router.isReady || !payment_intent) return;
+
+    const piId = payment_intent as string;
+    const storageKey = `dl_purchase_${piId}`;
+
+    // Check localStorage — if this payment_intent was already pushed, skip entirely
+    try {
+      if (localStorage.getItem(storageKey)) return;
+    } catch { /* localStorage unavailable — fall through and push */ }
+
+    fetch(`/api/get-payment?payment_intent=${encodeURIComponent(piId)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error || data.status !== 'succeeded') return;
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'purchase',
+          ecommerce: {
+            transaction_id: data.id,
+            value: data.amount / 100,
+            currency: data.currency.toUpperCase(),
+            items: [{
+              item_name: data.metadata?.product || 'Performance Evaluation',
+              item_category: 'Golf Services',
+              price: data.amount / 100,
+              quantity: 1,
+            }],
+          },
+          user_data: {
+            email: data.metadata?.email || '',
+            first_name: data.metadata?.first_name || '',
+            last_name: data.metadata?.last_name || '',
+            phone: data.metadata?.phone || '',
+          },
+        });
+
+        // Mark this payment_intent as pushed so it never fires again
+        try { localStorage.setItem(storageKey, '1'); } catch { /* ignore */ }
+      })
+      .catch(() => { /* silently fail — don't block the thank-you page */ });
+  }, [router.isReady, payment_intent]);
 
   const displayName = name ? decodeURIComponent(name as string).toUpperCase() : 'GOLFER';
 

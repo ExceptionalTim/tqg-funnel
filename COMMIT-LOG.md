@@ -1,9 +1,116 @@
 # Pre-Commit Diagnostic & Change Report (Cumulative)
 
 ## Diagnostic Summary
-- **Tests**: No `test` script or testing framework is currently configured in `package.json`.
-- **TypeScript**: One pre-existing error in `src/pages/index.tsx:65` — `Property 'open' does not exist on type 'Element'` (the `faq.open` DOM access needs a cast to `HTMLDetailsElement`). This error predates this commit's changes. All new and modified files compile cleanly.
-- **Build**: No lint or typecheck scripts configured. Manual `tsc --noEmit` confirms no new errors introduced.
+- **Tests**: No `test` script or testing framework configured.
+- **TypeScript**: `tsc --noEmit` passes with zero errors.
+- **Build**: `npm run build` succeeds — 14 pages + 3 API routes compiled. No warnings.
+- **Security**: Full audit completed. No API keys, secrets, or PII in source code. `.env.local` is gitignored. Stripe secret key is server-side only. New `get-payment` API returns only non-sensitive fields (id, amount, currency, status, metadata).
+
+---
+
+## Commit 6: Stripe Payment, GTM, and Purchase DataLayer Event
+
+### NEW: `src/pages/api/create-payment-intent.ts`
+- **What was changed**: POST-only API route. Creates a Stripe PaymentIntent for $75 (`amount: 7500, currency: 'usd'`). Attaches booking metadata (date, time, first_name, last_name, email, phone) to the PaymentIntent.
+- **Why**: Server-side endpoint required by Stripe's Payment Element flow.
+
+### NEW: `src/pages/api/get-payment.ts`
+- **What was changed**: GET-only API route. Accepts `payment_intent` query param, calls `stripe.paymentIntents.retrieve()`, and returns `{ id, amount, currency, status, metadata }`. Does not expose the full Stripe object — only the fields needed for the dataLayer.
+- **Why**: The thank-you page needs to pull transaction data and user info from Stripe to fire the `purchase` dataLayer event. This keeps the Stripe secret key server-side.
+
+### MODIFIED: `src/pages/book/evaluation/contact.tsx`
+- **What was changed**: Added `last_name` and `phone` to the query string in the `router.push()` call to the payment page (line 34). Previously only `name` (first name) and `email` were passed.
+- **Why**: These fields are needed downstream for the PaymentIntent metadata and the dataLayer `user_data` object.
+
+### MODIFIED: `src/pages/book/evaluation/payment.tsx`
+- **What was changed**: Complete rewrite replacing mock payment form with real Stripe Payment Element:
+  - Removed fake card inputs, `PLACEHOLDER_STRIPE_KEY`, mock setTimeout, all TODO blocks
+  - Added `loadStripe()`, `<Elements>` provider, `<PaymentElement>`, `CheckoutForm` component
+  - Dark theme `appearance` config matching existing design (night base, `#0A0A0A` inputs, `#d38743` focus, Open Sans)
+  - Now destructures `last_name` and `phone` from `router.query` and passes them to `/api/create-payment-intent`
+  - Loading spinner while PaymentIntent is created, error state with "Try again"
+  - Preserved: order summary card, button styling, "Go back" button, SSL footer
+- **Why**: Replace non-functional mock with real Stripe payment processing.
+
+### MODIFIED: `src/pages/book/evaluation/thank-you.tsx`
+- **What was changed**:
+  - Added `useEffect` that fetches `/api/get-payment?payment_intent=pi_xxx` on page load
+  - Pushes `window.dataLayer.push()` with GA4-compatible `purchase` event containing:
+    - `ecommerce.transaction_id` — Stripe PaymentIntent ID
+    - `ecommerce.value` — 75 (converted from cents)
+    - `ecommerce.currency` — USD
+    - `ecommerce.items` — Performance Evaluation, $75, qty 1, category "Golf Services"
+    - `user_data.email`, `.first_name`, `.last_name`, `.phone` — from PaymentIntent metadata
+  - **Deduplication**: Uses `localStorage` key `dl_purchase_{pi_id}` to ensure the event fires exactly once per payment intent — survives page refreshes, revisits, and browser restarts
+  - **Validation**: Only fires if `data.status === 'succeeded'` (skips pending/failed payments)
+  - Added `Window.dataLayer` type declaration
+- **Why**: GTM purchase event tracking with full ecommerce and user data, with bulletproof dedup.
+
+### MODIFIED: `src/pages/_document.tsx`
+- **What was changed**: Added GTM container `GTM-WZZP7HLD` — `<script>` first in `<Head>`, `<noscript>` iframe after `<body>`.
+- **Why**: Global tag manager tracking across all pages.
+
+### MODIFIED: `package.json` / `package-lock.json`
+- **What was changed**: Added `stripe` v22.0.0, `@stripe/stripe-js` v9.1.0, `@stripe/react-stripe-js` v6.1.0.
+- **Why**: Required for Stripe Payment Element integration.
+
+### NEW: `.env.local` (NOT committed — gitignored)
+- Contains `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and `STRIPE_SECRET_KEY`.
+
+### Potential Risks
+- **Stripe test mode**: Using test keys. Must switch to live keys before production.
+- **Vercel env vars**: Both Stripe keys must be added to Vercel's Environment Variables settings for the deployed version to work.
+- **No webhook verification**: The current flow trusts Stripe's redirect + `status === 'succeeded'` check. For production hardening, add a Stripe webhook endpoint to verify payment completion server-side.
+- **Fixed price**: $75 is hardcoded in `create-payment-intent.ts`. Must update if pricing changes.
+- **localStorage dedup**: If a user clears their browser storage and revisits the thank-you URL, the dataLayer event will fire again. This is an acceptable edge case — the alternative (server-side dedup) would require a database.
+- **`get-payment` API**: Currently has no authentication. Anyone who knows a `pi_xxx` ID could call it. The response only contains non-sensitive metadata (name, email, amount), but consider adding session validation for production.
+
+---
+
+### NEW: `src/pages/api/create-payment-intent.ts`
+- **What was changed**: Created a POST-only API route that creates a Stripe PaymentIntent for $75 (`amount: 7500, currency: 'usd'`). Attaches booking metadata (date, time, name, email) to the PaymentIntent for Stripe Dashboard record-keeping. Returns `{ clientSecret }` to the client.
+- **Why**: Server-side endpoint required by Stripe's Payment Element flow — the client needs a `clientSecret` to render the payment form and confirm payment.
+
+### MODIFIED: `src/pages/book/evaluation/payment.tsx`
+- **What was changed**: Complete rewrite replacing the mock payment form with a real Stripe Payment Element integration:
+  - Removed fake card number, expiry, and CVC input fields and their state variables
+  - Removed the `PLACEHOLDER_STRIPE_KEY` constant and all TODO comment blocks
+  - Removed the mock 2-second `setTimeout` payment simulation
+  - Added `loadStripe()` at module scope with the publishable key from env
+  - Added `appearance` config object matching the dark theme (night base, `#0A0A0A` input backgrounds, `#d38743` orange focus rings, `#d8c2b4` labels, Open Sans font)
+  - Added `CheckoutForm` child component using `useStripe()` and `useElements()` hooks with `<PaymentElement />`
+  - Parent component fetches `clientSecret` from `/api/create-payment-intent` on mount, then renders `<Elements>` provider wrapping `CheckoutForm`
+  - On successful payment, Stripe redirects to the thank-you page with `payment_intent` and `payment_intent_client_secret` appended to the URL
+  - Added loading spinner while PaymentIntent is being created, and error state with "Try again" button
+  - Preserved: order summary card, button styling, "Go back" button, "256-bit SSL / Powered by Stripe" footer, BookingLayout wrapper
+- **Why**: Replace the non-functional mock with a real payment flow that processes $75 charges via Stripe.
+
+### MODIFIED: `src/pages/book/evaluation/thank-you.tsx`
+- **What was changed**: Added `payment_intent` to the destructured `router.query` params (line 30). No UI changes.
+- **Why**: Stripe's `confirmPayment` automatically appends `payment_intent=pi_xxx` to the return URL. Capturing it now enables future data layer integration to pull transaction details from Stripe's API.
+
+### MODIFIED: `src/pages/_document.tsx`
+- **What was changed**: Added Google Tag Manager container `GTM-WZZP7HLD`:
+  - GTM `<script>` tag inserted as the first element in `<Head>` (highest priority position)
+  - GTM `<noscript>` iframe inserted immediately after `<body>` opening tag
+- **Why**: Enables Google Tag Manager tracking across all pages in the application (landing page, all funnel pages, thank-you pages). Placed in `_document.tsx` so it loads globally without needing to modify individual pages.
+
+### MODIFIED: `package.json` / `package-lock.json`
+- **What was changed**: Added three new dependencies:
+  - `stripe` v22.0.0 (server-side Node SDK for PaymentIntent creation)
+  - `@stripe/stripe-js` v9.1.0 (client-side `loadStripe()`)
+  - `@stripe/react-stripe-js` v6.1.0 (React components: `Elements`, `PaymentElement`, hooks)
+- **Why**: Required for the Stripe Payment Element integration.
+
+### NEW: `.env.local` (NOT committed — gitignored)
+- **What was changed**: Created with `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and `STRIPE_SECRET_KEY`.
+- **Why**: Stripe API keys for the payment integration. File is excluded from git by the `.env*` pattern in `.gitignore`.
+
+### Potential Risks
+- **Stripe test mode**: Currently using test keys (`pk_test_`, `sk_test_`). Must switch to live keys before production launch.
+- **Vercel env vars**: When deploying to Vercel, both Stripe keys must be added to the Vercel project's Environment Variables settings (Settings → Environment Variables). Without them, the API route will fail.
+- **No webhook verification**: The current implementation trusts Stripe's redirect. For production hardening, a Stripe webhook endpoint should be added to verify payment completion server-side.
+- **Fixed price**: The $75 amount is hardcoded in the API route. If pricing changes, it must be updated in `create-payment-intent.ts`.
 
 ---
 

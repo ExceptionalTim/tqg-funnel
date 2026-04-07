@@ -31,7 +31,7 @@ export default function EvaluationContactPage() {
     }
 
     // Navigate to payment step instead of thank-you
-    router.push(`/book/evaluation/payment?date=${date}&time=${time}&name=${encodeURIComponent(form.get('first_name') as string)}&email=${encodeURIComponent(form.get('email') as string)}`);
+    router.push(`/book/evaluation/payment?date=${date}&time=${time}&name=${encodeURIComponent(form.get('first_name') as string)}&last_name=${encodeURIComponent(form.get('last_name') as string)}&email=${encodeURIComponent(form.get('email') as string)}&phone=${encodeURIComponent(form.get('phone') as string)}`);
   };
 
   return (
