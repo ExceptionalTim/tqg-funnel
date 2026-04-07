@@ -8,6 +8,58 @@
 
 ---
 
+## Commit 7: Form DataLayer Events, Phone Formatting, and Input Validation
+
+### MODIFIED: `src/pages/book/evaluation/contact.tsx`
+- **What was changed**:
+  - Added US phone number auto-formatting: as the user types, digits are formatted to `(555) 000-0000` pattern via controlled input with `formatPhone()` helper.
+  - Added email validation: regex check for valid email format (`user@domain.tld`). Shows "Please enter a valid email address." on failure.
+  - Added phone validation: checks for exactly 10 digits. Shows "Please enter a valid 10-digit US phone number." on failure.
+  - On successful form submission, pushes `dataLayer` event:
+    - `event: 'form_submission'`
+    - `form_name: 'Performance Evaluation Form Submission'`
+    - `user_data: { email, first_name, last_name, phone }` — same keys as the `purchase` event
+  - Removed deprecated `FormEvent` import, using `React.SyntheticEvent<HTMLFormElement>` instead.
+- **Why**: Client needs form submission tracking in GTM with user data, and phone numbers need to be consistently formatted for US numbers. Email/phone validation prevents garbage data from entering the funnel.
+
+### MODIFIED: `src/pages/book/free-bay/contact.tsx`
+- **What was changed**: Identical changes as the evaluation contact form:
+  - US phone auto-formatting, email regex validation, 10-digit phone validation.
+  - On successful submission, pushes `dataLayer` event with `form_name: 'Free Bay Form Submission'` and matching `user_data` object.
+  - Removed deprecated `FormEvent` import.
+- **Why**: Same reasons — consistent tracking and validation across both funnels.
+
+### MODIFIED: `src/pages/book/evaluation/payment.tsx`
+- **What was changed**:
+  - Added `add_payment_info` dataLayer event that fires when the user first focuses (taps/clicks into) the Stripe Payment Element. Contains:
+    - `event: 'add_payment_info'`
+    - `ecommerce: { currency: 'USD', value: 75, payment_type: 'credit_card', items: [{ item_name: 'Performance Evaluation', ... }] }`
+  - Uses `useRef` guard to ensure it only fires once per page load (not on every focus).
+  - The Payment Element is wrapped in a `<div onFocus={handlePaymentFocus}>` to capture focus events bubbling from the Stripe iframe.
+  - `CheckoutForm` component now accepts `email` and `phone` props (passed from query params).
+  - Added `Window.dataLayer` type declaration.
+- **Why**: Client needs to track when users begin entering payment information, using the GA4 `add_payment_info` event standard.
+
+### Diagnostic Results
+- **TypeScript**: `tsc --noEmit` passes with zero errors.
+- **Build**: `npm run build` succeeds — 14 pages + 3 API routes. No warnings.
+- **Files changed**: 3 files, 122 insertions, 15 deletions.
+
+### DataLayer Event Summary (all events across the funnel)
+| Event | Page | Trigger | `user_data` |
+|---|---|---|---|
+| `form_submission` (Free Bay) | `/book/free-bay/contact` | Successful form submit | email, first_name, last_name, phone |
+| `form_submission` (Evaluation) | `/book/evaluation/contact` | Successful form submit | email, first_name, last_name, phone |
+| `add_payment_info` | `/book/evaluation/payment` | First focus on payment fields | — |
+| `purchase` | `/book/evaluation/thank-you` | Page load (localStorage dedup) | email, first_name, last_name, phone |
+
+### Potential Risks
+- **`onFocus` on Stripe iframe**: The `<PaymentElement>` renders in a Stripe-controlled iframe. The `onFocus` handler is on the wrapping `<div>`, which captures focus events when the user clicks into the payment area. If Stripe changes iframe focus behavior in a future SDK version, this could stop firing — but it's the standard approach.
+- **Phone formatting is US-only**: The `(XXX) XXX-XXXX` format assumes 10-digit US numbers. International numbers are not supported.
+- **No dedup on form_submission**: The form submission events fire on every successful submit. If a user submits, goes back, and submits again, it will fire twice. This is intentional — each submission represents a real user action, unlike `purchase` which must be unique per transaction.
+
+---
+
 ## Commit 6: Stripe Payment, GTM, and Purchase DataLayer Event
 
 ### NEW: `src/pages/api/create-payment-intent.ts`

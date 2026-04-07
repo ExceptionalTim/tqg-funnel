@@ -1,8 +1,14 @@
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { loadStripe, Appearance } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import BookingLayout from '../../../components/BookingLayout';
+
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -50,12 +56,34 @@ const appearance: Appearance = {
   },
 };
 
-function CheckoutForm({ date, time, name: bookingName }: { date: string; time: string; name: string }) {
+function CheckoutForm({ date, time, name: bookingName, email, phone }: { date: string; time: string; name: string; email: string; phone: string }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const paymentInfoPushed = useRef(false);
+
+  const handlePaymentFocus = () => {
+    if (paymentInfoPushed.current) return;
+    paymentInfoPushed.current = true;
+
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'add_payment_info',
+      ecommerce: {
+        currency: 'USD',
+        value: 75,
+        payment_type: 'credit_card',
+        items: [{
+          item_name: 'Performance Evaluation',
+          item_category: 'Golf Services',
+          price: 75,
+          quantity: 1,
+        }],
+      },
+    });
+  };
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -85,7 +113,9 @@ function CheckoutForm({ date, time, name: bookingName }: { date: string; time: s
         <h3 className="text-xs font-bold tracking-widest text-secondary" style={{ fontFamily: "'Open Sans', sans-serif" }}>SECURE PAYMENT</h3>
       </div>
 
-      <PaymentElement />
+      <div onFocus={handlePaymentFocus}>
+        <PaymentElement />
+      </div>
 
       {error && (
         <div className="mt-4 p-3 rounded-lg bg-error-container/20 text-error text-sm flex items-center gap-2">
@@ -235,6 +265,8 @@ export default function EvaluationPaymentPage() {
                   date={(date as string) || ''}
                   time={(time as string) || ''}
                   name={(name as string) || ''}
+                  email={(email as string) || ''}
+                  phone={(phone as string) || ''}
                 />
               </Elements>
             ) : (

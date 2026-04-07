@@ -1,12 +1,34 @@
 import { useRouter } from 'next/router';
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import BookingLayout from '../../../components/BookingLayout';
 import TestimonialSlider from '../../../components/TestimonialSlider';
+
+declare global {
+  interface Window {
+    dataLayer: Record<string, unknown>[];
+  }
+}
+
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePhone(phone: string): boolean {
+  return phone.replace(/\D/g, '').length === 10;
+}
 
 export default function EvaluationContactPage() {
   const router = useRouter();
   const { date, time } = router.query;
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [phone, setPhone] = useState('');
 
   const formatDate = (dateStr: string) => {
     try {
@@ -15,23 +37,38 @@ export default function EvaluationContactPage() {
     } catch { return dateStr; }
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const newErrors: Record<string, string> = {};
 
     if (!form.get('first_name')) newErrors.first_name = 'First name is required.';
     if (!form.get('last_name')) newErrors.last_name = 'Last name is required.';
-    if (!form.get('email')) newErrors.email = 'Email is required.';
-    if (!form.get('phone')) newErrors.phone = 'Phone number is required.';
+    const emailVal = (form.get('email') as string || '').trim();
+    if (!emailVal) { newErrors.email = 'Email is required.'; }
+    else if (!validateEmail(emailVal)) { newErrors.email = 'Please enter a valid email address.'; }
+    const phoneVal = form.get('phone') as string || '';
+    if (!phoneVal) { newErrors.phone = 'Phone number is required.'; }
+    else if (!validatePhone(phoneVal)) { newErrors.phone = 'Please enter a valid 10-digit US phone number.'; }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Navigate to payment step instead of thank-you
-    router.push(`/book/evaluation/payment?date=${date}&time=${time}&name=${encodeURIComponent(form.get('first_name') as string)}&last_name=${encodeURIComponent(form.get('last_name') as string)}&email=${encodeURIComponent(form.get('email') as string)}&phone=${encodeURIComponent(form.get('phone') as string)}`);
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'form_submission',
+      form_name: 'Performance Evaluation Form Submission',
+      user_data: {
+        email: emailVal,
+        first_name: (form.get('first_name') as string).trim(),
+        last_name: (form.get('last_name') as string).trim(),
+        phone: phoneVal,
+      },
+    });
+
+    router.push(`/book/evaluation/payment?date=${date}&time=${time}&name=${encodeURIComponent(form.get('first_name') as string)}&last_name=${encodeURIComponent(form.get('last_name') as string)}&email=${encodeURIComponent(emailVal)}&phone=${encodeURIComponent(phoneVal)}`);
   };
 
   return (
@@ -93,7 +130,7 @@ export default function EvaluationContactPage() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider" htmlFor="phone">Phone Number</label>
-                    <input className={`w-full bg-[#0A0A0A] ${errors.phone ? 'border-[#FF4444]' : 'border-outline-variant/30'} text-white rounded-lg px-4 py-3 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all`} id="phone" name="phone" placeholder="(555) 000-0000" type="tel" />
+                    <input className={`w-full bg-[#0A0A0A] ${errors.phone ? 'border-[#FF4444]' : 'border-outline-variant/30'} text-white rounded-lg px-4 py-3 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all`} id="phone" name="phone" placeholder="(555) 000-0000" type="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} />
                     {errors.phone && <p className="text-[10px] text-[#FF4444] font-bold uppercase tracking-wider">{errors.phone}</p>}
                   </div>
                 </div>
