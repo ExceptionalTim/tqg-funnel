@@ -2,12 +2,18 @@ import { google, calendar_v3 } from 'googleapis';
 
 // --- Calendar Configuration ---
 
-const BAY_CALENDARS = [
+// 5 general bays — used for Free Bay bookings only
+const RENTAL_BAYS = [
   { id: 'bays@tourqualitygolf.com', name: 'Hogan Bay' },
   { id: 'c_5f1f6fa68565221bc5e751649f8c671aa382db6660bd125ab97a342462e65a61@group.calendar.google.com', name: 'Members Bay' },
   { id: 'c_6f22b8efcf5657ac412fa70d2e5df3495b30be5a12891e97e75555c1d93ccc78@group.calendar.google.com', name: 'Nicklaus Bay' },
   { id: 'c_c77a1fb2d57dd246fad5cb7b979a7de260c643b913d7bda79175539e159df84e@group.calendar.google.com', name: 'Palmer Bay' },
   { id: 'c_97de1b63f827ff51d1748427b2948ade663f86fb65c8756f6107c9e009a1b9ac@group.calendar.google.com', name: 'Tiger Bay' },
+];
+
+// Dedicated lesson/fitting bay — used for Evaluation bookings only
+const LESSON_BAY = [
+  { id: 'c_206bd9092494e87bc89c3680039b4c7f5dee014e9f8888c936330e029a930175@group.calendar.google.com', name: 'Fitting & Lesson Bay' },
 ];
 
 const INSTRUCTOR_CALENDARS = [
@@ -145,14 +151,16 @@ export async function getAvailableSlots(
   const timeMin = new Date(`${date}T${OPEN_HOUR.toString().padStart(2, '0')}:00:00.000-05:00`).toISOString();
   const timeMax = new Date(`${date}T${CLOSE_HOUR.toString().padStart(2, '0')}:00:00.000-05:00`).toISOString();
 
+  // Free Bay uses the 5 rental bays; Evaluation uses the dedicated Fitting & Lesson Bay
+  const baysForType = type === 'free-bay' ? RENTAL_BAYS : LESSON_BAY;
+
   // Query bay availability (impersonate bays@ to access all bay calendars)
-  const bayIds = BAY_CALENDARS.map(b => b.id);
+  const bayIds = baysForType.map(b => b.id);
   const bayBusy = await queryFreeBusy(bayIds, timeMin, timeMax, 'bays@tourqualitygolf.com');
 
   // For evaluations, also query instructor availability
   let instructorBusy: Record<string, BusyInterval[]> = {};
   if (type === 'evaluation') {
-    // Query each instructor by impersonating them
     for (const inst of INSTRUCTOR_CALENDARS) {
       const busy = await queryFreeBusy([inst.id], timeMin, timeMax, inst.id);
       instructorBusy[inst.id] = busy[inst.id] || [];
@@ -165,8 +173,8 @@ export async function getAvailableSlots(
     const slotStart = parseSlotToDate(date, slot);
     const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60 * 1000);
 
-    // Check if at least one bay is free
-    const bayFree = BAY_CALENDARS.some(bay =>
+    // Check if at least one bay (of the correct type) is free
+    const bayFree = baysForType.some(bay =>
       isSlotFree(slotStart, slotEnd, bayBusy[bay.id] || [])
     );
     if (!bayFree) continue;
@@ -216,11 +224,12 @@ export async function bookSlot(params: BookingParams): Promise<BookingResult> {
   const timeMin = new Date(`${date}T${OPEN_HOUR.toString().padStart(2, '0')}:00:00.000-05:00`).toISOString();
   const timeMax = new Date(`${date}T${CLOSE_HOUR.toString().padStart(2, '0')}:00:00.000-05:00`).toISOString();
 
-  // Re-check bay availability
-  const bayIds = BAY_CALENDARS.map(b => b.id);
+  // Re-check bay availability — use correct bay group for booking type
+  const baysForType = type === 'free-bay' ? RENTAL_BAYS : LESSON_BAY;
+  const bayIds = baysForType.map(b => b.id);
   const bayBusy = await queryFreeBusy(bayIds, timeMin, timeMax, 'bays@tourqualitygolf.com');
 
-  const freeBays = BAY_CALENDARS.filter(bay =>
+  const freeBays = baysForType.filter(bay =>
     isSlotFree(slotStart, slotEnd, bayBusy[bay.id] || [])
   );
 

@@ -9,6 +9,29 @@
 
 ---
 
+## Commit 9: Separate Bay Pools for Free Bay vs Evaluation Bookings
+
+### MODIFIED: `src/lib/google-calendar.ts`
+- **What was changed**:
+  - Renamed `BAY_CALENDARS` to `RENTAL_BAYS` (5 general bays: Hogan, Members, Nicklaus, Palmer, Tiger).
+  - Added `LESSON_BAY` array containing the Fitting & Lesson Bay calendar (`c_206bd909...@group.calendar.google.com`).
+  - Both `getAvailableSlots()` and `bookSlot()` now select the correct bay pool based on booking type:
+    - `free-bay` → queries/books from `RENTAL_BAYS` (5 bays)
+    - `evaluation` → queries/books from `LESSON_BAY` (1 bay) + instructor calendars
+- **Why**: Per client (Ross MacDonald): the 5 general bays are for rental/free sessions only. The Fitting & Lesson Bay is dedicated to lessons and fittings — the $75 evaluation should only book into that bay. This prevents evaluation bookings from occupying rental bays and vice versa.
+
+### Diagnostic Results
+- **TypeScript**: Zero errors.
+- **Build**: 14 pages + 5 API routes. No warnings.
+- **API tests**: Free bay → 18 slots (30-min, 5 bays), Evaluation → 17 slots (60-min, 1 bay + instructors). Sunday → 0 slots. All correct.
+- **Files changed**: 1 file, 17 insertions, 8 deletions.
+
+### Potential Risks
+- **Single bay for evaluations**: Since evaluations now book from only 1 bay (Fitting & Lesson Bay), availability is more constrained. If that bay is fully booked, no evaluation slots will show even if other bays are free. This is intentional per the client's request.
+- **No calendar ID in source for the new bay is sensitive** — Calendar IDs are not secrets (they're analogous to email addresses).
+
+---
+
 ## Commit 8: Google Calendar Availability & Booking Integration
 
 ### NEW: `src/lib/google-calendar.ts`
