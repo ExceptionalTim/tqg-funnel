@@ -10,7 +10,18 @@ declare global {
   }
 }
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+let stripePromise: ReturnType<typeof loadStripe> | null = null;
+function getStripe() {
+  if (!stripePromise) {
+    const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (!key) {
+      console.error('Stripe publishable key is not configured');
+      return null;
+    }
+    stripePromise = loadStripe(key);
+  }
+  return stripePromise;
+}
 
 const appearance: Appearance = {
   theme: 'night',
@@ -260,15 +271,22 @@ export default function EvaluationPaymentPage() {
                 </button>
               </div>
             ) : clientSecret ? (
-              <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-                <CheckoutForm
-                  date={(date as string) || ''}
-                  time={(time as string) || ''}
-                  name={(name as string) || ''}
-                  email={(email as string) || ''}
-                  phone={(phone as string) || ''}
-                />
-              </Elements>
+              getStripe() ? (
+                <Elements stripe={getStripe()!} options={{ clientSecret, appearance }}>
+                  <CheckoutForm
+                    date={(date as string) || ''}
+                    time={(time as string) || ''}
+                    name={(name as string) || ''}
+                    email={(email as string) || ''}
+                    phone={(phone as string) || ''}
+                  />
+                </Elements>
+              ) : (
+                <div className="text-center py-8">
+                  <span className="material-symbols-outlined text-error text-4xl mb-4 block">error</span>
+                  <p className="text-error">Payment system configuration error. Please try again later.</p>
+                </div>
+              )
             ) : (
               <div className="flex flex-col items-center justify-center py-12 gap-4">
                 <span className="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
