@@ -87,8 +87,8 @@ export default function EvaluationContactPage() {
         <div className="w-full max-w-4xl flex flex-col items-center">
           <div className="w-full bg-surface-container-low p-8 md:p-10 rounded-xl border border-outline-variant/10 shadow-2xl">
             {/* Booking Summary */}
-            <div className="bg-secondary-container/20 rounded-lg p-4 mb-8 flex items-center justify-between border border-secondary/10">
-              <div className="flex items-center gap-6">
+            <div className="bg-secondary-container/20 rounded-lg p-4 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-secondary/10">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                 <div className="flex items-center gap-2 text-on-surface">
                   <span className="material-symbols-outlined text-secondary">calendar_today</span>
                   <span className="font-semibold">{date ? formatDate(date as string) : ''}</span>
@@ -100,7 +100,7 @@ export default function EvaluationContactPage() {
               </div>
               <button
                 onClick={() => router.push('/book/evaluation')}
-                className="text-primary font-bold text-sm underline decoration-primary underline-offset-4 hover:opacity-80 transition-opacity"
+                className="text-primary font-bold text-sm underline decoration-primary underline-offset-4 hover:opacity-80 transition-opacity self-end sm:self-auto"
               >
                 Change
               </button>
