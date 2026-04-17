@@ -9,6 +9,46 @@
 
 ---
 
+## Session 3 continued
+
+### Commit: Slack Notifications for New Bookings
+- **File**: `src/pages/api/book.ts`
+- **Change**: After a successful `bookSlot()`, sends a formatted Slack message via Incoming Webhook. Includes emoji-coded booking type, customer name, email, phone, date/time, bay name, and coach (for evaluations). Fire-and-forget — `.catch(() => {})` ensures Slack failures never block bookings.
+- **Env var**: `SLACK_WEBHOOK_URL` added to `.env.local` and Vercel.
+- **Why**: Ross wants instant notification in Slack for every new booking.
+
+### Commit: Filter Out Past Time Slots
+- **File**: `src/components/CalendarWidget.tsx`
+- **Change**: When viewing today's availability, slots before the current Central Time hour are filtered out client-side after fetching from the API. Future dates show all slots.
+- **Why**: Past time slots (e.g., 10:00am when it's 2pm) were still visible and selectable.
+
+### Commit: Fix Icon Text Flash (FOUT)
+- **File**: `src/pages/_document.tsx`
+- **Change**: Material Symbols icon font changed from `display=swap` to `display=block`. Text fonts remain `display=swap`.
+- **Why**: Icon names like "chevron_left" and "progress_activity" flashed as text before the icon font loaded.
+
+### Commit: Meta Titles and Descriptions
+- **Files**: All 10 funnel pages + `BookingLayout.tsx`
+- **Change**: Every page now has a unique, keyword-rich meta title and description. `BookingLayout` accepts optional `description` prop.
+- **Why**: Pages were missing meta descriptions and landing pages shared the same generic title — bad for SERPs.
+
+### Commit: Evaluation Landing Page (`/evaluation`)
+- **File**: `src/pages/evaluation.tsx` (new)
+- **Change**: Duplicate of main landing page with all free bay CTAs removed. Single evaluation offer card.
+- **Why**: Dedicated landing page for evaluation-focused ad campaigns.
+
+### Commit: Free Bay Landing Page (`/free-bay`)
+- **File**: `src/pages/free-bay.tsx` (new)
+- **Change**: Duplicate of main landing page with all evaluation CTAs removed. Single free bay offer card.
+- **Why**: Dedicated landing page for free bay ad campaigns.
+
+### Commit: Payment CTA Copy
+- **File**: `src/pages/book/evaluation/payment.tsx`
+- **Change**: Button text "Pay $75 & Confirm Booking" → "Book Your Evaluation"
+- **Why**: Reduces price-friction on the CTA.
+
+---
+
 ## Session 3 (2026-04-17): Landing Page Variants + Calendar Buttons + CRO Fixes
 
 ### Commit: Payment CTA Copy Change
