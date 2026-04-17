@@ -4,13 +4,15 @@ import { ReactNode } from 'react';
 interface BookingLayoutProps {
   children: ReactNode;
   title: string;
+  description?: string;
 }
 
-export default function BookingLayout({ children, title }: BookingLayoutProps) {
+export default function BookingLayout({ children, title, description }: BookingLayoutProps) {
   return (
     <>
       <Head>
         <title>{title} — Tour Quality Golf</title>
+        {description && <meta name="description" content={description} />}
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" />

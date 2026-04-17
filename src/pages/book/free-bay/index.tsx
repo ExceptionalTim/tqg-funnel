@@ -12,7 +12,7 @@ export default function FreeBayDatePage() {
   };
 
   return (
-    <BookingLayout title="Book Your Free Bay Session">
+    <BookingLayout title="Book Your Free Bay Session" description="Select your date and time for a free 30-minute TrackMan session at Tour Quality Golf in Tulsa, OK. Real-time ball flight data on every swing.">
       <section className="max-w-7xl mx-auto px-8 py-16 flex flex-col items-center">
         {/* Headline */}
         <div className="text-center mb-12">

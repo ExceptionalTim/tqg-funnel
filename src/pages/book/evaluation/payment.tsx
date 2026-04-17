@@ -215,7 +215,7 @@ export default function EvaluationPaymentPage() {
   const displayName = name ? decodeURIComponent(name as string) : '';
 
   return (
-    <BookingLayout title="Secure Payment">
+    <BookingLayout title="Secure Checkout" description="Complete your $75 payment to confirm your 60-minute performance evaluation with a PGA-certified instructor at Tour Quality Golf.">
       <section className="max-w-7xl mx-auto px-8 py-16 flex flex-col items-center">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-7xl leading-tight uppercase tracking-tight">

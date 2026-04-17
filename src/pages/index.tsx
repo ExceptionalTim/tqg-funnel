@@ -77,7 +77,8 @@ export default function Page() {
   return (
     <>
       <Head>
-        <title>Tour Quality Golf | TQG Tulsa - Precision Performance</title>
+        <title>Tour Quality Golf Tulsa — Indoor TrackMan Bays, Lessons & Club Fitting</title>
+        <meta name="description" content="Tulsa's premier indoor golf facility. TrackMan-powered bays, PGA-certified instruction, and precision club fitting. Book your free 30-minute session or a full performance evaluation today." />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" />

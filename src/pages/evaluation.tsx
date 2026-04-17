@@ -68,7 +68,8 @@ export default function EvaluationLandingPage() {
   return (
     <>
       <Head>
-        <title>Tour Quality Golf | TQG Tulsa - Precision Performance</title>
+        <title>Performance Evaluation 50% Off — Tour Quality Golf Tulsa</title>
+        <meta name="description" content="Get a full 60-minute swing diagnostic with a PGA-certified instructor and TrackMan data. Now just $75 (reg. $150). Book your performance evaluation in Tulsa today." />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" />

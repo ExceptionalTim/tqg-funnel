@@ -69,7 +69,8 @@ export default function FreeBayLandingPage() {
   return (
     <>
       <Head>
-        <title>Tour Quality Golf | TQG Tulsa - Precision Performance</title>
+        <title>Free 30-Minute TrackMan Session — Tour Quality Golf Tulsa</title>
+        <meta name="description" content="Try TrackMan for free. 30 minutes of tour-level launch monitor data on every swing. No strings attached. Book your free indoor bay session in Tulsa today." />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" />

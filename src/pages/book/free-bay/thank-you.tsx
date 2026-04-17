@@ -42,7 +42,7 @@ export default function FreeBayThankYouPage() {
   const displayName = name ? decodeURIComponent(name as string).toUpperCase() : 'GOLFER';
 
   return (
-    <BookingLayout title="You're Booked">
+    <BookingLayout title="You're Booked" description="Your free TrackMan bay session is confirmed. Check your booking details and add the event to your calendar.">
       {/* Confirmation Hero */}
       <section className="relative min-h-[70vh] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
         <div className="z-10 text-center max-w-4xl w-full">

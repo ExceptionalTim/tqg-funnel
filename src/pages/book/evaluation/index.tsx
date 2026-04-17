@@ -12,7 +12,7 @@ export default function EvaluationDatePage() {
   };
 
   return (
-    <BookingLayout title="Book Your Performance Evaluation">
+    <BookingLayout title="Book Your Performance Evaluation" description="Choose a date and time for your 60-minute performance evaluation with a PGA-certified instructor at Tour Quality Golf in Tulsa, OK.">
       {/* Section 1: Hero & Booking */}
       <section className="max-w-7xl mx-auto px-8 py-16 flex flex-col items-center">
         {/* Centered Headline */}

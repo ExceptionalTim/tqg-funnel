@@ -114,7 +114,7 @@ export default function FreeBayContactPage() {
   };
 
   return (
-    <BookingLayout title="Your Details">
+    <BookingLayout title="Your Details — Free Bay Session" description="Enter your contact details to confirm your free 30-minute indoor bay session at Tour Quality Golf Tulsa.">
       <section className="max-w-7xl mx-auto px-8 py-16 flex flex-col items-center">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-7xl leading-tight uppercase tracking-tight">

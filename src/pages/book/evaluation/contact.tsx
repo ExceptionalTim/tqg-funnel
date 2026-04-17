@@ -72,7 +72,7 @@ export default function EvaluationContactPage() {
   };
 
   return (
-    <BookingLayout title="Your Details — Performance Evaluation">
+    <BookingLayout title="Your Details — Performance Evaluation" description="Enter your contact information to continue booking your performance evaluation at Tour Quality Golf Tulsa.">
       {/* Section 1: Hero & Booking */}
       <section className="max-w-7xl mx-auto px-8 py-16 flex flex-col items-center">
         {/* Centered Headline */}
