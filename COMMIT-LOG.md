@@ -3,9 +3,56 @@
 ## Diagnostic Summary
 - **Tests**: No `test` script or testing framework configured.
 - **TypeScript**: `tsc --noEmit` passes with zero errors.
-- **Build**: `npm run build` succeeds — 14 pages + 5 API routes compiled. No warnings.
+- **Build**: `npm run build` succeeds — 17 pages + 5 API routes compiled. No warnings.
 - **Security**: Google Service Account key stored as base64 in `.env.local` (gitignored). No secrets in source. Calendar IDs are hardcoded constants (non-sensitive).
 - **API verification**: Free bay returns 18 slots (30-min), evaluation returns 17 slots (60-min), Sunday returns 0 slots. All correct.
+
+---
+
+## Session 3 (2026-04-17): Landing Page Variants + Calendar Buttons + CRO Fixes
+
+### Commit: Payment CTA Copy Change
+- **File**: `src/pages/book/evaluation/payment.tsx`
+- **Change**: Button text changed from "Pay $75 & Confirm Booking" to "Book Your Evaluation"
+- **Why**: Reduces friction — price-first CTAs create hesitation. Action-first copy converts better.
+
+### Commit: Inline "Next →" Button in CalendarWidget
+- **Files**: `CalendarWidget.tsx`, `free-bay/index.tsx`, `evaluation/index.tsx`
+- **Change**: Replaced external "Continue →" button below the calendar with an inline "Next →" button that slides in next to the selected time slot (Calendly-style). Selected slot uses orange outline instead of solid fill. Removed unused state from parent pages.
+- **Why**: Better UX — the action appears right where the user is looking, not below a scrollable widget.
+
+### Commit: Smart Default Date
+- **File**: `CalendarWidget.tsx`
+- **Change**: Default selected date now checks Central Time hour. If past 7 PM (closing), advances to tomorrow. Skips Sunday.
+- **Why**: Users landing after hours saw "Cannot check availability for past dates" — hurts conversions.
+
+### Commit: Functional Calendar Buttons
+- **Files**: `src/lib/calendar-links.ts` (new), `free-bay/thank-you.tsx`, `evaluation/thank-you.tsx`
+- **Change**: "Add to Google Calendar" opens Google Calendar with pre-filled event. "Add to Apple Calendar" downloads an .ics file. Shared helper handles URL generation and ICS creation. Free Bay = 30-min events, Evaluation = 60-min events. Both include TQG location address.
+- **Why**: Buttons were previously non-functional `<button>` elements with no click handlers.
+
+### Commit: Free Bay Landing Page (`/free-bay`)
+- **File**: `src/pages/free-bay.tsx` (new — copy of `index.tsx`)
+- **Change**: Removed all evaluation/paid CTAs: "GET A FULL LESSON — 50% OFF" hero button, evaluation offer card, "BOOK YOUR EVALUATION" buttons in mid-page and final CTA sections. Offer section title changed to "Your Path to Better Golf". All CTA routing goes to `/book/free-bay` only.
+- **Why**: Dedicated landing page for ad campaigns targeting free bay sessions only — no paid offer distraction.
+
+### Commit: Evaluation Landing Page (`/evaluation`)
+- **File**: `src/pages/evaluation.tsx` (new — copy of `index.tsx`)
+- **Change**: Removed all free bay CTAs: "BOOK YOUR FREE 30 MINUTES" hero button, free bay offer card, "FREE 30 MINUTE Practice" and "CLAIM YOUR FREE BAY" buttons. Offer section title changed to "Your Path to Better Golf". Hero CTA is "GET A FULL LESSON — 50% OFF". All CTA routing goes to `/book/evaluation` only.
+- **Why**: Dedicated landing page for ad campaigns targeting paid evaluations only — no free offer distraction.
+
+### Landing Page Summary
+| URL | Purpose | CTAs |
+|---|---|---|
+| `/` | Both offers (original) | Free Bay + Evaluation |
+| `/free-bay` | Free bay only | Free Bay only |
+| `/evaluation` | Evaluation only | Evaluation only |
+
+### Calendar Integration Verification
+- `src/lib/google-calendar.ts`: UNMODIFIED
+- `src/pages/api/availability.ts`: UNMODIFIED
+- `src/pages/api/book.ts`: UNMODIFIED
+- API results: 18/17/0 slots — all correct
 
 ---
 
