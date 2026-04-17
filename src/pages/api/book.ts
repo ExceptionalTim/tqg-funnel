@@ -42,6 +42,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       date, time, type, firstName, lastName, email, phone, notes,
     });
 
+    // Send Slack notification (fire-and-forget)
+    const slackUrl = process.env.SLACK_WEBHOOK_URL;
+    if (slackUrl) {
+      const emoji = type === 'free-bay' ? '🏌️' : '💰';
+      const label = type === 'free-bay' ? 'Free Bay Session' : 'Performance Evaluation ($75)';
+      fetch(slackUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `${emoji} *New Booking: ${label}*\n\n👤 ${firstName} ${lastName}\n📧 ${email}\n📱 ${phone}\n📅 ${date} at ${time}\n🏠 ${result.bayName}${result.instructorName ? `\n🎓 Coach: ${result.instructorName}` : ''}${notes ? `\n📝 ${notes}` : ''}`,
+        }),
+      }).catch(() => { /* silently fail */ });
+    }
+
     res.status(200).json(result);
   } catch (err) {
     if (err instanceof Error && err.message === 'SLOT_TAKEN') {
