@@ -64,7 +64,30 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, book
         if (data.error) {
           setSlotsError(data.error);
         } else {
-          setAvailableSlots(data.slots || []);
+          const slots = data.slots || [];
+          const now = new Date();
+          const todayStr = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+
+          if (dateStr === todayStr) {
+            const centralTimeStr = now.toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: 'numeric', hour12: false });
+            const [currentHour, currentMin] = centralTimeStr.split(':').map(Number);
+            const currentMinutes = currentHour * 60 + currentMin;
+
+            const filtered = slots.filter((slot: string) => {
+              const match = slot.match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
+              if (!match) return true;
+              let hour = parseInt(match[1]);
+              const min = parseInt(match[2]);
+              const period = match[3].toLowerCase();
+              if (period === 'pm' && hour !== 12) hour += 12;
+              if (period === 'am' && hour === 12) hour = 0;
+              const slotMinutes = hour * 60 + min;
+              return slotMinutes > currentMinutes;
+            });
+            setAvailableSlots(filtered);
+          } else {
+            setAvailableSlots(slots);
+          }
         }
       })
       .catch(() => setSlotsError('Failed to load availability. Please try again.'))
