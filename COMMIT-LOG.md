@@ -37,6 +37,18 @@
 
 ---
 
+## Commit: Mobile Booking Summary Layout Fix
+- **Files**: `src/pages/book/free-bay/contact.tsx`, `src/pages/book/evaluation/contact.tsx`
+- **Change**: Booking summary bar (date, time, Change link) now stacks vertically on mobile with "Change" aligned right. Desktop stays horizontal. Changed from `flex items-center justify-between` to `flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3`.
+- **Why**: On mobile, the date text, time, and "Change" link were overlapping on a single row, making the time unreadable.
+
+## Commit: Mobile Calendar Slide-to-Time-Slots UX
+- **File**: `src/components/CalendarWidget.tsx`
+- **Change**: On mobile, tapping a date slides the calendar left and reveals time slots from the right. "← Back to calendar" link returns to date picker. Today indicator changed from dot to gold ring border. Desktop side-by-side layout unchanged.
+- **Why**: Users on mobile only saw the calendar above the fold with no indication that time slots existed below.
+
+---
+
 ## Session 3 continued
 
 ### Commit: Slack Notifications for New Bookings
