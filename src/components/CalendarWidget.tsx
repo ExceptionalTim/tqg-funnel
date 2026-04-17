@@ -38,6 +38,7 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, book
   const [currentYear, setCurrentYear] = useState(defaultDate.getFullYear());
   const [selectedDate, setSelectedDate] = useState<Date>(defaultDate);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [showTimes, setShowTimes] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState<string | null>(null);
@@ -124,6 +125,7 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, book
     const newDate = new Date(currentYear, currentMonth, day);
     setSelectedDate(newDate);
     setSelectedTime(null);
+    setShowTimes(true);
   };
 
   const handleTimeClick = (time: string) => {
@@ -159,9 +161,9 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, book
       <h2 className="text-2xl font-bold text-on-surface mb-6" style={{ fontFamily: "'Open Sans', sans-serif" }}>
         Select a Date &amp; Time
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="flex overflow-hidden md:gap-8">
         {/* Left: Calendar Grid */}
-        <div className="space-y-4">
+        <div className={`w-full md:w-1/2 shrink-0 space-y-4 transition-all duration-300 ease-out ${showTimes ? 'max-w-0 opacity-0 overflow-hidden md:max-w-none md:opacity-100' : 'max-w-full opacity-100'}`}>
           <div className="flex items-center justify-between">
             <button
               onClick={prevMonth}
@@ -202,14 +204,12 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, book
                   disabled={disabled}
                   className={`aspect-square flex flex-col items-center justify-center rounded-full text-sm font-semibold transition-colors relative
                     ${selected ? 'bg-primary-container text-on-primary-container shadow-lg font-bold' : ''}
+                    ${isToday && !selected ? 'ring-1 ring-primary-container' : ''}
                     ${disabled ? 'text-on-surface-variant opacity-30 cursor-not-allowed' : ''}
                     ${!selected && !disabled ? 'hover:bg-primary/10' : ''}
                   `}
                 >
                   <span>{day}</span>
-                  {isToday && !selected && (
-                    <span className="absolute bottom-1 w-1 h-1 bg-secondary rounded-full" />
-                  )}
                 </button>
               );
             })}
@@ -227,7 +227,13 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, book
         </div>
 
         {/* Right: Time Slots */}
-        <div className="flex flex-col">
+        <div className={`w-full md:w-1/2 shrink-0 flex flex-col transition-all duration-300 ease-out ${showTimes ? 'max-w-full opacity-100' : 'max-w-0 opacity-0 overflow-hidden md:max-w-none md:opacity-100'}`}>
+          <button
+            onClick={() => setShowTimes(false)}
+            className="md:hidden mb-4 text-primary text-sm flex items-center gap-1"
+          >
+            <span className="material-symbols-outlined text-base">chevron_left</span> Back to calendar
+          </button>
           <h3 className="text-lg font-bold text-on-surface mb-4" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             {selectedDayLabel}
           </h3>

@@ -9,6 +9,34 @@
 
 ---
 
+## Commit: Mobile Calendar Slide-to-Time-Slots UX
+
+### MODIFIED: `src/components/CalendarWidget.tsx`
+- **What was changed**:
+  - Added `showTimes` boolean state to control mobile panel visibility.
+  - On mobile (< `md` breakpoint), tapping a date now slides the calendar panel left and reveals the time slots panel from the right, using the same `max-w` + `opacity` + `duration-300 ease-out` animation as the inline "Next" button.
+  - A "← Back to calendar" link (mobile only, hidden on desktop via `md:hidden`) lets users return to the date picker.
+  - Today's date indicator changed from a small colored dot below the number to a `ring-1 ring-primary-container` (1px gold border circle), which is more visible and doesn't conflict with the filled orange background of the selected date.
+  - Layout changed from `grid grid-cols-1 md:grid-cols-2` to `flex overflow-hidden` with two `w-full md:w-1/2 shrink-0` panels. Desktop overrides (`md:max-w-none md:opacity-100`) ensure side-by-side layout is unaffected.
+- **Why**: On mobile, users only saw the calendar above the fold with no indication that time slots existed below. This caused missed bookings. The slide animation matches Calendly's mobile UX pattern.
+
+### Google Calendar Integration Verification
+- `src/lib/google-calendar.ts`: **UNMODIFIED** — zero diff
+- `src/pages/api/availability.ts`: **UNMODIFIED** — zero diff
+- `src/pages/api/book.ts`: **UNMODIFIED** — zero diff
+- API test results: Free Bay → 18 slots, Evaluation → 17 slots, Sunday → 0 slots (all correct)
+
+### Diagnostic Results
+- **TypeScript**: Zero errors
+- **Build**: 17 pages + 5 API routes, no warnings
+- **Files changed**: 1 file, 12 insertions, 6 deletions
+
+### Potential Risks
+- **Tailwind CDN `max-w-none`**: This utility should be supported by Tailwind CDN. If not, the desktop override would fail and desktop would also show the slide behavior. Low risk — `max-w-none` has been in Tailwind since v2.
+- **`ring-1` on calendar dates**: If the ring overlaps with adjacent date buttons on very small screens, it could look slightly crowded. Low risk — the `gap-1` between grid cells provides enough spacing.
+
+---
+
 ## Session 3 continued
 
 ### Commit: Slack Notifications for New Bookings
