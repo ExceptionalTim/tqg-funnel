@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import BookingLayout from '../../../components/BookingLayout';
 import TestimonialSlider from '../../../components/TestimonialSlider';
+import { openGoogleCalendar, downloadICS } from '../../../lib/calendar-links';
 
 declare global {
   interface Window {
@@ -181,10 +182,16 @@ export default function EvaluationThankYouPage() {
               </div>
             </div>
             <div className="mt-10 flex flex-wrap gap-4 justify-start">
-              <button className="px-6 py-3 rounded-full border border-primary text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center gap-2">
+              <button
+                onClick={() => date && time && openGoogleCalendar('Performance Evaluation — Tour Quality Golf', date as string, decodeURIComponent(time as string), 60, [instructorName ? `Coach: ${instructorName}` : '', bayName ? `Bay: ${bayName}` : ''].filter(Boolean).join('\n'))}
+                className="px-6 py-3 rounded-full border border-primary text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center gap-2"
+              >
                 <span className="material-symbols-outlined text-sm">event</span> Add to Google Calendar
               </button>
-              <button className="px-6 py-3 rounded-full border border-primary text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center gap-2">
+              <button
+                onClick={() => date && time && downloadICS('Performance Evaluation — Tour Quality Golf', date as string, decodeURIComponent(time as string), 60, [instructorName ? `Coach: ${instructorName}` : '', bayName ? `Bay: ${bayName}` : ''].filter(Boolean).join('\n'))}
+                className="px-6 py-3 rounded-full border border-primary text-primary font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center gap-2"
+              >
                 <span className="material-symbols-outlined text-sm">calendar_add_on</span> Add to Apple Calendar
               </button>
             </div>
