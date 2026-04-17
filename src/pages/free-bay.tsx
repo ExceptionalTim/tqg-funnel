@@ -62,7 +62,15 @@ export default function FreeBayLandingPage() {
       });
     });
 
-
+    // Mobile nav menu
+    const mobileNav = document.getElementById('mobile-nav');
+    const menuToggle = document.getElementById('mobile-menu-toggle');
+    const menuClose = document.getElementById('mobile-menu-close');
+    const showMenu = () => { if (mobileNav) { mobileNav.style.opacity = '1'; mobileNav.style.pointerEvents = 'auto'; mobileNav.style.visibility = 'visible'; } };
+    const hideMenu = () => { if (mobileNav) { mobileNav.style.opacity = '0'; mobileNav.style.pointerEvents = 'none'; mobileNav.style.visibility = 'hidden'; } };
+    menuToggle?.addEventListener('click', showMenu);
+    menuClose?.addEventListener('click', hideMenu);
+    mobileNav?.querySelectorAll('a').forEach(link => link.addEventListener('click', hideMenu));
 
     }, [router]);
 
@@ -170,11 +178,21 @@ export default function FreeBayLandingPage() {
 <div class="flex items-center gap-4">
 <button id="nav-book-now" class="bg-primary-container text-on-primary-container px-4 md:px-6 py-2 rounded-full font-bold hover:scale-95 transition-all duration-150 text-sm md:text-base">Book Now</button>
 <!-- Hamburger Menu Icon (Visible on mobile and tablet) -->
-<button class="lg:hidden text-white flex items-center justify-center p-1">
+<button id="mobile-menu-toggle" class="lg:hidden text-white flex items-center justify-center p-1">
 <span class="material-symbols-outlined text-3xl">menu</span>
 </button>
 </div>
 </nav>
+<!-- Mobile Navigation Overlay -->
+<div id="mobile-nav" class="fixed inset-0 z-[60] bg-surface/95 backdrop-blur-md flex flex-col items-center justify-center gap-8 transition-all duration-300" style="opacity:0;pointer-events:none;visibility:hidden;">
+<button id="mobile-menu-close" class="absolute top-6 right-6 text-white p-2"><span class="material-symbols-outlined text-3xl">close</span></button>
+<a class="text-white text-2xl font-['Bayon'] uppercase tracking-wide" href="#how-it-works-section">How It Works</a>
+<a class="text-white text-2xl font-['Bayon'] uppercase tracking-wide" href="#why-tqg">Why TQG</a>
+<a class="text-white text-2xl font-['Bayon'] uppercase tracking-wide" href="#social-proof">Testimonials</a>
+<a class="text-white text-2xl font-['Bayon'] uppercase tracking-wide" href="#the-offer">The Offer</a>
+<a class="text-white text-2xl font-['Bayon'] uppercase tracking-wide" href="#the-facility">The Facility</a>
+<a class="text-white text-2xl font-['Bayon'] uppercase tracking-wide" href="#faq">FAQ</a>
+</div>
 <!-- SECTION 1: HERO -->
 <header class="relative min-h-[70vh] flex items-center py-28 px-6 md:px-12 overflow-hidden bg-surface">
 <div class="absolute inset-0 z-0">
