@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useRouter } from 'next/router';
 import BookingLayout from '../../../components/BookingLayout';
 import CalendarWidget from '../../../components/CalendarWidget';
@@ -6,19 +5,10 @@ import TestimonialSlider from '../../../components/TestimonialSlider';
 
 export default function EvaluationDatePage() {
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   const handleDateTimeSelect = (date: Date, time: string) => {
-    setSelectedDate(date);
-    setSelectedTime(time);
-  };
-
-  const handleContinue = () => {
-    if (selectedDate && selectedTime) {
-      const dateStr = selectedDate.toISOString().split('T')[0];
-      router.push(`/book/evaluation/contact?date=${dateStr}&time=${encodeURIComponent(selectedTime)}`);
-    }
+    const dateStr = date.toISOString().split('T')[0];
+    router.push(`/book/evaluation/contact?date=${dateStr}&time=${encodeURIComponent(time)}`);
   };
 
   return (
@@ -35,16 +25,6 @@ export default function EvaluationDatePage() {
         {/* Calendar Workspace (Using our specialized widget instead of the raw HTML container) */}
         <div className="w-full max-w-4xl flex flex-col items-center">
           <CalendarWidget onDateTimeSelect={handleDateTimeSelect} maxHeight={600} bookingType="evaluation" />
-          
-          {/* Continue Button */}
-          {selectedTime && (
-            <button
-              onClick={handleContinue}
-              className="mt-8 w-full bg-[#D38743] hover:bg-[#b7753a] text-on-primary-container font-bold py-4 px-10 rounded-full transition-transform active:scale-95 uppercase tracking-widest text-sm shadow-xl"
-            >
-              Continue →
-            </button>
-          )}
         </div>
       </section>
 

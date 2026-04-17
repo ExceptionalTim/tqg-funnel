@@ -97,10 +97,7 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, book
   };
 
   const handleTimeClick = (time: string) => {
-    setSelectedTime(time);
-    if (selectedDate) {
-      onDateTimeSelect(selectedDate, time);
-    }
+    setSelectedTime(selectedTime === time ? null : time);
   };
 
   const prevMonth = () => {
@@ -229,17 +226,26 @@ export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, book
           ) : (
             <div className="flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: '380px' }}>
               {availableSlots.map(time => (
-                <button
-                  key={time}
-                  onClick={() => handleTimeClick(time)}
-                  className={`w-full py-3 px-6 rounded-lg font-semibold text-center border transition-all text-sm
-                    ${selectedTime === time
-                      ? 'bg-primary-container text-on-primary-container border-primary-container shadow-md'
-                      : 'bg-surface-container-high text-on-surface border-outline-variant/20 hover:border-primary/50'
-                    }`}
-                >
-                  {time}
-                </button>
+                <div key={time} className="flex gap-2 items-stretch">
+                  <button
+                    onClick={() => handleTimeClick(time)}
+                    className={`flex-1 py-3 px-6 rounded-lg font-semibold text-center border transition-all duration-200 text-sm
+                      ${selectedTime === time
+                        ? 'bg-transparent text-primary-container border-primary-container'
+                        : 'bg-surface-container-high text-on-surface border-outline-variant/20 hover:border-primary/50'
+                      }`}
+                  >
+                    {time}
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-300 ease-out ${selectedTime === time ? 'max-w-[120px] opacity-100' : 'max-w-0 opacity-0'}`}>
+                    <button
+                      onClick={() => onDateTimeSelect(selectedDate, time)}
+                      className="h-full py-3 px-6 rounded-lg font-bold text-sm bg-primary-container text-on-primary-container shadow-md hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-tight whitespace-nowrap"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}

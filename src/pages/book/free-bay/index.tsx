@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useRouter } from 'next/router';
 import BookingLayout from '../../../components/BookingLayout';
 import CalendarWidget from '../../../components/CalendarWidget';
@@ -6,19 +5,10 @@ import TestimonialSlider from '../../../components/TestimonialSlider';
 
 export default function FreeBayDatePage() {
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   const handleDateTimeSelect = (date: Date, time: string) => {
-    setSelectedDate(date);
-    setSelectedTime(time);
-  };
-
-  const handleContinue = () => {
-    if (selectedDate && selectedTime) {
-      const dateStr = selectedDate.toISOString().split('T')[0];
-      router.push(`/book/free-bay/contact?date=${dateStr}&time=${encodeURIComponent(selectedTime)}`);
-    }
+    const dateStr = date.toISOString().split('T')[0];
+    router.push(`/book/free-bay/contact?date=${dateStr}&time=${encodeURIComponent(time)}`);
   };
 
   return (
@@ -34,16 +24,6 @@ export default function FreeBayDatePage() {
 
         {/* Calendar Widget */}
         <CalendarWidget onDateTimeSelect={handleDateTimeSelect} maxHeight={600} bookingType="free-bay" />
-
-        {/* Continue Button */}
-        {selectedTime && (
-          <button
-            onClick={handleContinue}
-            className="mt-8 w-full max-w-4xl py-5 px-8 bg-primary-container text-on-primary-container font-black text-lg rounded-full shadow-xl hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-tight"
-          >
-            Continue →
-          </button>
-        )}
       </section>
 
       {/* The Tour Quality Experience */}

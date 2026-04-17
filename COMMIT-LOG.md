@@ -9,6 +9,41 @@
 
 ---
 
+## Commit 10: Inline "Next →" Button in CalendarWidget (Calendly-style)
+
+### MODIFIED: `src/components/CalendarWidget.tsx`
+- **What was changed**:
+  - Time slot selection no longer immediately triggers `onDateTimeSelect`. Instead, clicking a time slot toggles it selected/deselected (clicking the same slot again deselects it).
+  - Selected time slot styling changed from solid orange background (`bg-primary-container`) to transparent background with orange border (`bg-transparent border-primary-container`) — so it doesn't look identical to the "Next" CTA button.
+  - A "Next →" button now appears inline to the right of the selected time slot, with a slide-in animation (`max-w-0 → max-w-[120px]`, `opacity-0 → opacity-100`, `duration-300 ease-out`).
+  - The "Next →" button triggers `onDateTimeSelect(selectedDate, time)` which navigates to the contact form.
+- **Why**: Mimics Calendly's UX where the next action appears inline next to the selected slot, instead of a separate button below the entire widget. Better visual affordance.
+
+### MODIFIED: `src/pages/book/free-bay/index.tsx`
+- **What was changed**: Removed the external "Continue →" button that appeared below the CalendarWidget. Removed unused `useState` import, `selectedDate`/`selectedTime` state, and `handleContinue` function. The `handleDateTimeSelect` callback now directly navigates to the contact page.
+- **Why**: Navigation is now handled inside the CalendarWidget via the inline "Next →" button. The parent page no longer needs to track selection state.
+
+### MODIFIED: `src/pages/book/evaluation/index.tsx`
+- **What was changed**: Same changes as free-bay/index.tsx — removed external "Continue →" button, unused state, and `handleContinue`. Navigation happens directly in `handleDateTimeSelect`.
+- **Why**: Same reason — CalendarWidget handles the UX internally.
+
+### Google Calendar Integration Verification
+- **`src/lib/google-calendar.ts`**: UNMODIFIED — zero diff
+- **`src/pages/api/availability.ts`**: UNMODIFIED — zero diff
+- **`src/pages/api/book.ts`**: UNMODIFIED — zero diff
+- **API test results**: Free Bay → 18 slots, Evaluation → 17 slots, Sunday → 0 slots (all correct)
+- **Conclusion**: Calendar integration is completely unaffected by these UI changes.
+
+### Diagnostic Results
+- **TypeScript**: Zero errors
+- **Build**: 14 pages + 5 API routes, no warnings
+- **Files changed**: 3 files, 25 insertions, 59 deletions (net reduction — cleaner code)
+
+### Potential Risks
+- **None significant.** Changes are purely UI/UX — no API, booking, or calendar logic was touched. The `onDateTimeSelect` callback interface is unchanged.
+
+---
+
 ## Session 2 (2026-04-16): Stripe Live Keys + Payment Element Fix
 
 ### Summary
