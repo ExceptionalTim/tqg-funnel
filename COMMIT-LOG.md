@@ -37,6 +37,11 @@
 
 ---
 
+## Commit: Mobile Hamburger Menu
+- **Files**: `src/pages/index.tsx`, `src/pages/free-bay.tsx`, `src/pages/evaluation.tsx`
+- **Change**: Hamburger button now opens a full-screen nav overlay (`z-[60]`, `bg-surface/95 backdrop-blur-md`) with all section links (How It Works, Why TQG, Testimonials, The Offer, The Facility, FAQ). Close button (X) and link clicks dismiss the overlay with a fade animation. Added `id="mobile-menu-toggle"` to hamburger button and wired click handlers in `useEffect`.
+- **Why**: The hamburger icon was a static `<button>` with no click handler — tapping it did nothing on mobile.
+
 ## Commit: Mobile Booking Summary Layout Fix
 - **Files**: `src/pages/book/free-bay/contact.tsx`, `src/pages/book/evaluation/contact.tsx`
 - **Change**: Booking summary bar (date, time, Change link) now stacks vertically on mobile with "Change" aligned right. Desktop stays horizontal. Changed from `flex items-center justify-between` to `flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3`.
