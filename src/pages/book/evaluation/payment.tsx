@@ -149,7 +149,7 @@ function CheckoutForm({ date, time, name: bookingName, email, phone }: { date: s
               Processing...
             </span>
           ) : (
-            'Pay $75 & Confirm Booking'
+            'Book Your Evaluation'
           )}
         </button>
 
