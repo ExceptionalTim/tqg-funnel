@@ -9,6 +9,44 @@
 
 ---
 
+## Session 2 (2026-04-16): Stripe Live Keys + Payment Element Fix
+
+### Summary
+Switched Stripe from test keys to live keys and resolved the Payment Element not rendering on production. No source code changes needed beyond the lazy-load guard in payment.tsx (commit a26f5cc). The root cause was the old 2019-era publishable key (`pk_live_ijgb...`) being incompatible with Stripe's Payment Element API — rolling the key to the new format (`pk_live_51C4XoR...`) fixed it.
+
+### Changes Made
+
+**Environment Variables (`.env.local` + Vercel)**:
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: changed from `pk_test_...` → `pk_live_51C4XoR...` (new rolled key)
+- `STRIPE_SECRET_KEY`: changed from `sk_test_...` → `sk_live_KYoMDDs...`
+- Both updated on Vercel via `vercel env add --value` (not shell piping — piping corrupts values)
+
+**`src/pages/book/evaluation/payment.tsx`** (commit a26f5cc):
+- Replaced module-scope `loadStripe()` with lazy `getStripe()` function that validates the key exists
+- Added visible error message if key is missing instead of silent empty render
+- Why: Defense against undefined env var during build. Not the root cause of this issue but good hardening.
+
+### Root Cause Analysis
+The old Stripe publishable key (`pk_live_ijgbPyt2YA5OkjBmoFVLDuw6000EmkMhUL`, created June 2019) was a legacy format incompatible with Stripe's Payment Element API. The Payment Element loaded briefly then received **401 Unauthorized** from `api.stripe.com/v1/el_pe_payment_intent` because the old key format can't authenticate against the Payment Element backend. Rolling the key in Stripe Dashboard generated a new-format key (`pk_live_51C4XoR...`) which works correctly.
+
+### Errors Encountered and Resolved
+1. **Shell piping corrupts env var values**: `echo "key" | vercel env add` mangles the value. Fix: use `vercel env add --value 'key'` instead.
+2. **Vercel build cache**: `NEXT_PUBLIC_` vars are inlined at build time. Must "Redeploy without cache" after changing them.
+3. **401 from Stripe on production**: Old publishable key format (2019) incompatible with Payment Element. Fix: Roll the key in Stripe Dashboard.
+
+### Diagnostic Results
+- **TypeScript**: Zero errors
+- **Build**: 14 pages + 5 API routes, no warnings
+- **Stripe API**: Live PaymentIntent creation confirmed (`pi_3TMz...`)
+- **Live key in bundle**: Verified `pk_live_51C4XoR...` present in deployed JS chunk
+- **No uncommitted code changes**: All fixes already pushed
+- **Untracked files**: 8 GTM JSON import files (one-time tools, not for git)
+
+### Potential Risks
+- **Old Stripe integrations**: If the client's WordPress site (tourqualitygolf.com) uses the old publishable key for Forminator or other plugins, those will break since the key was rolled. The `rk_live_...N9nD` restricted key (visible in Stripe dashboard) is separate and unaffected.
+
+---
+
 ## Commit 9: Separate Bay Pools for Free Bay vs Evaluation Bookings
 
 ### MODIFIED: `src/lib/google-calendar.ts`
