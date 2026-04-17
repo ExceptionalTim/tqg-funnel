@@ -20,10 +20,17 @@ function getFirstDayOfMonth(year: number, month: number): number {
 
 export default function CalendarWidget({ onDateTimeSelect, maxHeight = 600, bookingType }: CalendarWidgetProps) {
   const today = new Date();
-  const isSunday = today.getDay() === 0;
+  const centralHour = parseInt(
+    today.toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hour12: false })
+  );
 
   const defaultDate = new Date(today);
-  if (isSunday) {
+  // If past closing time (7 PM Central), advance to tomorrow
+  if (centralHour >= 19) {
+    defaultDate.setDate(defaultDate.getDate() + 1);
+  }
+  // Skip Sunday
+  if (defaultDate.getDay() === 0) {
     defaultDate.setDate(defaultDate.getDate() + 1);
   }
 

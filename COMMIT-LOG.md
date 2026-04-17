@@ -9,6 +9,34 @@
 
 ---
 
+## Commit 11: Smart Default Date — Skip Past Closing Time
+
+### MODIFIED: `src/components/CalendarWidget.tsx`
+- **What was changed**: Replaced the simple Sunday-only check for the default selected date with smart logic that uses `toLocaleString` with `America/Chicago` timezone to get the current Central Time hour. If it's past 7 PM (closing time), the default date advances to tomorrow. Then skips Sunday if needed.
+- **Why**: When users landed on the booking page after 7 PM, the calendar defaulted to today, which had no availability. The API returned "Cannot check availability for past dates" — a poor first impression that hurts conversions. Now the default always lands on a date with potential availability.
+- **Cases covered**:
+  - Before 7 PM Mon-Sat: defaults to today (has slots)
+  - After 7 PM Mon-Thu: defaults to tomorrow
+  - After 7 PM Friday: defaults to Saturday
+  - After 7 PM Saturday: defaults to Monday (skips Sunday)
+  - Sunday any time: defaults to Monday
+
+### Google Calendar Integration Verification
+- `src/lib/google-calendar.ts`: **UNMODIFIED** — zero diff
+- `src/pages/api/availability.ts`: **UNMODIFIED** — zero diff
+- `src/pages/api/book.ts`: **UNMODIFIED** — zero diff
+- API test results: Free Bay → 18 slots, Evaluation → 17 slots, Sunday → 0 slots (all correct)
+
+### Diagnostic Results
+- **TypeScript**: Zero errors
+- **Build**: 14 pages + 5 API routes, no warnings
+- **Files changed**: 1 file, 9 insertions, 2 deletions
+
+### Potential Risks
+- **Timezone detection on client**: Uses `toLocaleString` with `America/Chicago` timezone which works in all modern browsers. If a browser doesn't support the `timeZone` option (extremely rare, pre-2016 browsers), `parseInt` would get NaN and the `>= 19` check would be false — defaulting to today, which is the old behavior. No regression.
+
+---
+
 ## Commit 10: Inline "Next →" Button in CalendarWidget (Calendly-style)
 
 ### MODIFIED: `src/components/CalendarWidget.tsx`
